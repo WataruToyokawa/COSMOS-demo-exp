@@ -707,6 +707,10 @@ io.on('connection', function (client) {
 		}
 	});
 
+	client.on('debug pointerdown!', function(data) {
+		console.log('debug pointerdown at ' + data.x + ', ' + data.y);
+	});
+
 	client.on("disconnect", function () {
 		if(typeof client.room != 'undefined') {
 			let thisRoomName = client.room;
