@@ -5,12 +5,12 @@
 =========================================== */
 
 // randomly choosing an integer between min and max
-function rand(max, min = 0) {
+export function rand(max, min = 0) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 //
-function isNotNegative (element) {
+export function isNotNegative (element) {
 	return element >= 0;
 }
 
@@ -22,7 +22,7 @@ function isNotNegative (element) {
 	@return number generated
 	Box-Muller Method
 */
-function BoxMuller(m, sigma) {
+export function BoxMuller(m, sigma) {
 	let a = 1 - Math.random();
 	let b = 1 - Math.random();
 	let c = Math.sqrt(-2 * Math.log(a));
@@ -34,7 +34,7 @@ function BoxMuller(m, sigma) {
 };
 
 // Sum of all elements of the array
-function sum (arr, fn) {
+export function sum (arr, fn) {
 	if (fn) {
 		return sum(arr.map(fn));
 	}
@@ -45,33 +45,39 @@ function sum (arr, fn) {
 	}
 };
 
-function waitingBarCompleted () {
+export function waitingBarCompleted () {
 	//console.log('waitingBarCompleted is fired');
 }
 
-function debug_pointerdown (x, y) {
+export function debug_pointerdown (x, y) {
 	socket.emit('debug pointerdown!', {x: x, y: y});
 }
 
-function sending_core_is_ready (isPreloadDone) {
+export function sending_core_is_ready (isPreloadDone) {
 	if (isPreloadDone) {
 		socket.emit('core is ready', {latency: 0, maxLatencyForGroupCondition: maxLatencyForGroupCondition});
 		// console.log('emitting "core is ready" to the server');
 	}
 }
 
-function goToQuestionnaire () {
+export function goToQuestionnaire () {
 	////console.log('goToQuestionnaire()');
 	$("#form").submit();
 }
 
-function settingConfirmationID (id) {
+export function settingConfirmationID (id) {
 	$("#confirmationID").val(id);
 }
 
-function testFunction (x, y) {
-	console.log('dude was clicked');
-	game.scene.start('ScenePerfect');
+export function testFunction (x, y, this_game) {
+	console.log('dude was clicked at x = '+x + '; y = '+y);
+	this_game.game.scene.start('SceneFeedback');
+	this_game.game.scene.sleep('SceneDebugEnv');
+}
+
+export function debug_pointerdown_feedback (this_game) {
+	this_game.game.scene.wake('SceneDebugEnv');
+	this_game.game.scene.sleep('SceneFeedback');
 }
 
 

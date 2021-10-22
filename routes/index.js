@@ -13,7 +13,7 @@ const express = require('express');
 const router = express.Router();
 const browser = require('browser-detect');
 const amazonIdList = [];
-const exceptions = ['INHOUSETEST3', 'wataru'];
+const exceptions = ['INHOUSETEST3', 'debug-20211021'];
 const prob_indiv = 0;//0.05; // One of five individuals (on average) will go directly to the individual condition
 
 /* GET home page. */

@@ -3,7 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const amazonIdList = [];
-const exceptions = ['INHOUSETEST3','wataru'];
+const exceptions = ['INHOUSETEST3','debug-20211021'];
+
+// http://63-250-60-135.cloud-xip.io:8080/?amazonID=debug-20211021
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {
@@ -24,7 +26,7 @@ const exceptions = ['INHOUSETEST3','wataru'];
 router.get('/', function(req, res, next) {
 	res.render('game', {
 		title: 'Online experiment',
-		amazonID: 'INHOUSETEST3'
+		amazonID: 'INHOUSETEST3' //INHOUSETEST3
 	});
 });
 

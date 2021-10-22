@@ -34,3 +34,5 @@ class ScenePerfect extends Phaser.Scene {
 
 	update(){}
 };
+
+export default ScenePerfect;

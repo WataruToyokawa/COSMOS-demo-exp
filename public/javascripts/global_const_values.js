@@ -4,7 +4,7 @@
 const portnumQuestionnaire = 8000
 	// , htmlServer = 'http://192.168.33.10:' // vagrant server (for debug)
 	, htmlServer = 'http://63-250-60-135.cloud-xip.io:' //ipaddress 63.250.60.135
-	, exceptions = ['INHOUSETEST3', 'wataruDebug', 'wataruDebug']
+	, exceptions = ['INHOUSETEST3', 'debug-20211021']
 	, socket = io.connect(htmlServer+portnum, { query: 'amazonID='+amazonID }) // portnum is defined in game;ejs
 ;
 

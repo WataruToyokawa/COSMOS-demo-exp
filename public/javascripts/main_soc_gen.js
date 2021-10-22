@@ -12,9 +12,29 @@ Author: Wataru Toyokawa (wataru.toyokawa@uni-konstanz.de)
 
 'use strict';
 
-import my_name from './test_module.js';
+// ==== Scenes ===========================================
+import SceneWaitingRoom0 from './SceneWaitingRoom0.js';
+import SceneWaitingRoom from './SceneWaitingRoom.js';
+import SceneWaitingRoom2 from './SceneWaitingRoom2.js';
+import SceneDebugEnv from './SceneDebugEnv.js';
+import SceneDebugPopup from './SceneDebugPopup.js';
+import SceneSocialWindow from './SceneSocialWindow.js';
+import ScenePerfect from './ScenePerfect.js';
+import SceneStartCountdown from './SceneStartCountdown.js';
+import SceneFeedback from './SceneFeedback.js';
 
-console.log('My name is ' + my_name);
+// ===== Functions =============================
+import {rand
+	, isNotNegative
+	, BoxMuller
+	, sum
+	, waitingBarCompleted
+	, debug_pointerdown
+	, sending_core_is_ready
+	, goToQuestionnaire
+	, settingConfirmationID
+	, testFunction
+} from './functions.js';
 
 const myData = [];
 
@@ -31,7 +51,7 @@ window.onload = function() {
 
 
     //======== monitoring reload activity ==========
-    if (window.performance & amazonID != 'INHOUSETEST') {
+    if (window.performance & amazonID != 'INHOUSETEST3') {
         if (performance.navigation.type === 1) {
             // Redirecting to the questionnaire
             socket.io.opts.query = 'sessionName=already_finished';
@@ -62,14 +82,14 @@ window.onload = function() {
             hidden_elapsedTime += 1;
             hiddenTimer = setInterval(function(){
                 hidden_elapsedTime += 500;
-                if (hidden_elapsedTime > browserHiddenPermittedTime & amazonID != 'INHOUSETEST') {
+                if (hidden_elapsedTime > browserHiddenPermittedTime & amazonID != 'INHOUSETEST3') {
                     socket.io.opts.query = 'sessionName=already_finished';
                     socket.disconnect();
                 }
             }, 500);
         } else {
             clearTimeout(hiddenTimer);
-            if (hidden_elapsedTime > browserHiddenPermittedTime & amazonID != 'INHOUSETEST') {
+            if (hidden_elapsedTime > browserHiddenPermittedTime & amazonID != 'INHOUSETEST3') {
                 setTimeout(function(){
                     // Force client to move to the questionnaire
                     socket.io.opts.query = 'sessionName=already_finished';
@@ -83,284 +103,26 @@ window.onload = function() {
     });
     //======== end: monitoring tab activity =====
 
-	// SceneWaitingRoom0
-	class SceneWaitingRoom0 extends Phaser.Scene {
 
-		// make it public so that other scene can access to it (?)
-    	//public sprite: Phaser.GameObjects.Sprite;
+	// ======== SceneMain -- main scene; experimental task ========
+	// class SceneMain extends Phaser.Scene {
 
-		constructor (){
-		    super({ key: 'SceneWaitingRoom0', active: true });
-		}
+	// 	constructor (){
+	// 	    super({ key: 'SceneMain', active: false });
+	// 	}
 
-		preload(){
-			// progress bar
-			let progressBox = this.add.graphics();
-			let progressBar = this.add.graphics();
-			progressBox.fillStyle(0x222222, 0.8);
-			progressBox.fillRect(240, 270, 320, 50);
-			// loading text
-			let width = this.cameras.main.width;
-			let height = this.cameras.main.height;
-			let loadingText = this.make.text({
-			    x: width / 2,
-			    y: height / 2 - 50,
-			    text: 'Loading...',
-			    style: {
-			        font: '20px',
-			        fill: nomalTextColor
-			    }
-			});
-			loadingText.setOrigin(0.5, 0.5);
-			// percent text
-			let percentText = this.make.text({
-			    x: width / 2,
-			    y: height / 2 - 5,
-			    text: '0%',
-			    style: {
-			        font: '18px monospace',
-			        fill: '#ffffff'
-			    }
-			});
-			percentText.setOrigin(0.5, 0.5);
-			// loading stuff
-		    this.load.image('button', 'assets/button.001.png');
-		    this.load.image('button_active', 'assets/button.active.png');
-			this.load.image('bonusBarFrame', 'assets/bar.png');
-			this.load.image('bonusBar', 'assets/scaleOrange.png');
-			this.load.image('perfectImg', 'assets/PERFECT.png');
-			this.load.image('startImg', 'assets/start.png');
-			this.load.image('energycontainer', 'assets/energycontainer.png');
-			this.load.image('energybar', 'assets/energybar.png');
+	// 	preload(){
+	// 		}
 
-			// dude
-			// for (let i=1; i<25; i++) {
-			// 	if (i < 10) {
-			// 		this.load.image('player_0'+i, 'assets/Player/player_0'+i+'.png');
-			// 	} else {
-			// 		this.load.image('player_'+i, 'assets/Player/player_'+i+'.png');
-			// 	}
-			// }
-			this.load.pack("pack", "assets/preload-asset-pack.json");
-			
-
-			this.load.image('blackbox', 'assets/blackbox.png');
-			// progress bar functions
-			this.load.on('progress', function (value) {
-			    ////console.log(value);
-			    progressBar.clear();
-			    progressBar.fillStyle(0xffffff, 1);
-			    progressBar.fillRect(250, 280, 300 * value, 30);
-			    percentText.setText(parseInt(value * 100) + '%');
-			});
-			this.load.on('fileprogress', function (file) {
-			    //console.log(file.src);
-			});
-			this.load.on('complete', function () {
-			    // console.log('preloading is completed!: core is ready');
-			    isPreloadDone = true;
-			    progressBar.destroy();
-				progressBox.destroy();
-				loadingText.destroy();
-				percentText.destroy();
-				sending_core_is_ready(isPreloadDone)
-				// if(!isWaitingRoomStarted) {
-				// 	socket.emit('loading completed');
-				// }
-				// execute if preload completed later than on.connection('this is your parameter')
-				//if(isEnvironmentReady) game.scene.start('SceneWaitingRoom');
-				//======== letting the server know latency with this client ==========
-			    // after calculating the first average latency
-			    // the client should be put into the individual condition
-			    // sending_core_is_ready(isPreloadDone);
-			    //socket.emit('core is ready', {latency: 0, maxLatencyForGroupCondition: maxLatencyForGroupCondition});
-
-			    // setTimeout(function(){
-			    //     submittedLatency = sum(averageLatency)/averageLatency.length;
-			    //     socket.emit('core is ready', {latency: submittedLatency, maxLatencyForGroupCondition: maxLatencyForGroupCondition});
-			    //     $("#latency").val(submittedLatency);
-			    // }, averageLatency.length*1000+500);
-
-			    //======== end: letting the server know latency with this client ==========
-			});
-		}
-
-		create(){
-			// background colour
-			this.cameras.main.setBackgroundColor('#FFFFFF'); //#FFFFFF == 'white'
-			// text styles
-			const textStyle = 
-				{ fontSize: '24px', fill: nomalTextColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true } };
-			const noteStyle = 
-				{ fontSize: '24px', fill: noteColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true }, fontstyle: 'bold' };
-			//  Texts
-		    let title = this.add.text(configWidth/2, 18, waitingRoomText0[0], { fontSize: '36px', fill: '#000', fontstyle: 'bold' });
-		    let note1 = this.add.text(configWidth/2, 70, waitingRoomText0[1], textStyle);
-		    let note2 = this.add.text(configWidth/2, 70+30*2, waitingRoomText0[2], textStyle);
-		    let note3 = this.add.text(configWidth/2, 70+30*4, waitingRoomText0[3], noteStyle);
-		    title.setOrigin(0.5, 0.5);
-		    note1.setOrigin(0.5, 0.5);
-		    note2.setOrigin(0.5, 0.5);
-		    note3.setOrigin(0.5, 0.5);
-		}
-
-		update(){
-			emitting_time += 1/(3*game.loop.actualFps) // incrementing every 3 seconds
-			if (!isWaitingRoomStarted & emitting_time % 3 == 0) {
-				sending_core_is_ready(isPreloadDone)
-			}
-		}
-	};
+	// 	create(){
 
 
+	// 	}
+	// 	update(){
 
-	// SceneWaitingRoom
-	class SceneWaitingRoom extends Phaser.Scene {
-
-		constructor (){
-		    super({ key: 'SceneWaitingRoom', active: false });
-		}
-
-		preload(){
-		}
-
-		create(){
-			isWaitingRoomStarted = true;
-			// background colour
-			this.cameras.main.setBackgroundColor('#FFFFFF'); //#FFFFFF == 'white'
-			// text styles
-			const textStyle = 
-				{ fontSize: '24px', fill: nomalTextColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true } };
-			const noteStyle = 
-				{ fontSize: '24px', fill: noteColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true }, fontstyle: 'bold' };
-			//  Texts
-		    let title = this.add.text(configWidth/2, 18, waitingRoomText[0], { fontSize: '36px', fill: '#000', fontstyle: 'bold' });
-		    let note1 = this.add.text(configWidth/2, 70, waitingRoomText[1], textStyle);
-		    let note2 = this.add.text(configWidth/2, 70+30*2, waitingRoomText[2], textStyle);
-		    let note3 = this.add.text(configWidth/2, 70+30*4, waitingRoomText[3], noteStyle);
-		    title.setOrigin(0.5, 0.5);
-		    note1.setOrigin(0.5, 0.5);
-		    note2.setOrigin(0.5, 0.5);
-		    note3.setOrigin(0.5, 0.5);
-			
-            // waitingBonusBar
-            this.restTime = restTime;
-            waitingCountdown = this.time.delayedCall(restTime, waitingBarCompleted, [], this);
-			waitingBox = this.add.graphics();
-			waitingBar = this.add.graphics();
-			waitingBox.fillStyle(0x000000, 0.7); // color, alpha
-			waitingBox.fillRect(240, 270, 320, 50);
-			bonusBox = this.add.graphics();
-			bonusBar = this.add.graphics();
-			bonusBox.fillStyle(0x000000, 0.7); // color, alpha
-			bonusBox.fillRect(240, 380, 320, 50);
-			// countdown texts
-			countdownText = this.add.text(configWidth/2, 340, 'The study starts in ?? sec.' , textStyle);
-			countdownText.setOrigin(0.5, 0.5);
-			bonusText = this.add.text(configWidth/2, 450, 'Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.' , textStyle);
-			bonusText.setOrigin(0.5, 0.5);
-
-		}
-
-		update(){
-			waitingBar.clear();
-			waitingBar.fillStyle(0x00a5ff, 1);
-		    waitingBar.fillRect(250, 280, 300 * waitingCountdown.getProgress(), 30);
-			countdownText.setText('The study starts in ' + ( Math.floor(0.9+(this.restTime/1000)*(1-waitingCountdown.getProgress())) ).toString().substr(0, 3) + ' sec.');
-			////console.log( 0.9+(restTime/1000)*(1-waitingCountdown.getProgress()) );
-			////console.log(waitingCountdown.getProgress());
-			waitingBonus += 1.0/(6*game.loop.actualFps) //1 pence per 6 seconds = 6 pounds per hour
-			bonusBar.clear();
-			bonusBar.fillStyle(0xff5a00, 1);
-			if(waitingBonus*2<300) {
-		    	bonusBar.fillRect(250, 390, waitingBonus*2, 30); //1 pence per 6 seconds = 6 pounds per hour
-			}else{
-				bonusBar.fillRect(250, 390, 300, 30);
-			}
-			bonusText.setText('Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.');
-		}
-	};
-
-	// SceneWaitingRoom2
-	class SceneWaitingRoom2 extends Phaser.Scene {
-
-		constructor (){
-		    super({ key: 'SceneWaitingRoom2', active: false });
-		}
-
-		preload(){
-		}
-
-		create(){
-			// background colour
-			this.cameras.main.setBackgroundColor('#FFFFFF'); //#FFFFFF == 'white'
-			// text styles
-			const textStyle = 
-				{ fontSize: '24px', fill: nomalTextColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true } };
-			const noteStyle = 
-				{ fontSize: '24px', fill: noteColor, wordWrap: { width: configWidth-80, useAdvancedWrap: true }, fontstyle: 'bold' };
-			//  Texts
-		    let title = this.add.text(configWidth/2, 18, waitingForOthers[0], { fontSize: '36px', fill: '#000', fontstyle: 'bold' });
-		    let note1 = this.add.text(configWidth/2, 70, waitingForOthers[1], textStyle);
-		    let note2 = this.add.text(configWidth/2, 70+30*2, waitingForOthers[2], textStyle);
-		    let note3 = this.add.text(configWidth/2, 70+30*4, waitingForOthers[3], noteStyle);
-		    title.setOrigin(0.5, 0.5);
-		    note1.setOrigin(0.5, 0.5);
-		    note2.setOrigin(0.5, 0.5);
-		    note3.setOrigin(0.5, 0.5);
-			
-            // waitingBonusBar
-            //restTime = 10;
-            waitingCountdown = this.time.delayedCall(restTime, waitingBarCompleted, [], this);
-			//waitingBox = this.add.graphics();
-			//waitingBar = this.add.graphics();
-			//waitingBox.fillStyle(0x000000, 0.7); // color, alpha
-			//waitingBox.fillRect(240, 270, 320, 50);
-			bonusBox = this.add.graphics();
-			bonusBar = this.add.graphics();
-			bonusBox.fillStyle(0x000000, 0.7); // color, alpha
-			bonusBox.fillRect(240, 380, 320, 50);
-			// countdown texts
-			//countdownText = this.add.text(configWidth/2, 340, 'The study starts in ?? sec.' , textStyle);
-			//countdownText.setOrigin(0.5, 0.5);
-			bonusText = this.add.text(configWidth/2, 450, 'Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.' , textStyle);
-			bonusText.setOrigin(0.5, 0.5);
-		}
-
-		update(){
-			waitingBonus += 1.0/(6*game.loop.actualFps)
-			bonusBar.clear();
-			bonusBar.fillStyle(0xff5a00, 1);
-			if(waitingBonus*2<300) {
-		    	bonusBar.fillRect(250, 390, waitingBonus*2, 30); //1 pence per 6 seconds = 6 pounds per hour
-			}else{
-				bonusBar.fillRect(250, 390, 300, 30);
-			}
-			bonusText.setText('Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.');
-		}
-	};
-
-
-
-	// SceneMain -- main scene; experimental task
-	class SceneMain extends Phaser.Scene {
-
-		constructor (){
-		    super({ key: 'SceneMain', active: false });
-		}
-
-		preload(){
-			}
-
-		create(){
-
-
-		}
-		update(){
-
-		}
-	};
-
+	// 	}
+	// };
+	// ======== end: SceneMain -- main scene; experimental task ========
 
 	let config = {
 	    type: Phaser.AUTO, // Phaser.CANVAS, Phaser.WEBGL, or Phaser.AUTO
@@ -392,11 +154,12 @@ window.onload = function() {
 	    , SceneDebugPopup
     	, ScenePerfect
     	, SceneStartCountdown
-    	, SceneMain
+    	, SceneSocialWindow
+        , SceneFeedback
     	]
 	};
 
-	let game = new Phaser.Game(config);
+	var game = new Phaser.Game(config);
 	game.scene.add('SceneWaitingRoom0');
 	game.scene.add('SceneWaitingRoom');
 	game.scene.add('SceneWaitingRoom2');
@@ -404,7 +167,8 @@ window.onload = function() {
 	game.scene.add('SceneDebugPopup')
 	game.scene.add('ScenePerfect');
 	game.scene.add('SceneStartCountdown');
-	game.scene.add('SceneMain');
+	game.scene.add('SceneSocialWindow');
+    game.scene.add('SceneFeedback');
 
 
 	// I think this ping-pong monitoring is out-of-date; review needed. Discarded in the future

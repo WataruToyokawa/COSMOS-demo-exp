@@ -1,5 +1,9 @@
 'use strict';
 
+import {debug_pointerdown
+	, testFunction
+} from './functions.js';
+
 // debug test environment
 class SceneDebugEnv extends Phaser.Scene {
 
@@ -19,6 +23,9 @@ class SceneDebugEnv extends Phaser.Scene {
 		let historyText = this.add.text(16, fieldHeight + 16, 'Past yield: ???', { fontSize: '25px', fill: '#000' });
 		this.historyText = historyText;
 
+		// --- social information window (including my payoff from the preceding trial) ---
+		this.scene.launch('SceneSocialWindow', {previous_payoffs: [100,200,300,400]});
+
 		// --- Creating options ---
 		let options = {}
 		for (let i = 1; i < num_cell+1; i++) {
@@ -33,6 +40,7 @@ class SceneDebugEnv extends Phaser.Scene {
 						Once such a list is ready, I should rewrite the following i and j
 					=======================================================================*/
 					this.historyText.setText('Past yield: box' + i + j);
+					this.scene.launch('SceneDebugPopup', {x: pointer.x, y:pointer.y});
 				}, this);
 			}
 		}
@@ -43,7 +51,7 @@ class SceneDebugEnv extends Phaser.Scene {
 		this.target = target;
 		this.player = player;
 		this.player.play('down-walk').setInteractive({ cursor: 'pointer' });
-		this.debug = this.add.graphics();
+		// this.debug = this.add.graphics();
 
 		// --- What happens when click events fire ------
 		this.input.on('pointerdown', function (pointer) {
@@ -67,9 +75,9 @@ class SceneDebugEnv extends Phaser.Scene {
 			// Move at 200 px/s:
 			this.physics.moveToObject(this.player, this.target, 400);
 
-			this.debug.clear().lineStyle(1, 0x00ff00);
-			this.debug.lineBetween(0, this.target.y, configHeight, this.target.y);
-			this.debug.lineBetween(this.target.x, 0, this.target.x, configWidth);
+			// this.debug.clear().lineStyle(1, 0x00ff00);
+			// this.debug.lineBetween(0, this.target.y, configHeight, this.target.y);
+			// this.debug.lineBetween(this.target.x, 0, this.target.x, configWidth);
 
 			debug_pointerdown(this.target.x, this.target.y);
 
@@ -83,7 +91,7 @@ class SceneDebugEnv extends Phaser.Scene {
 			this.player.clearTint();
 		}, this);
 		this.player.on('pointerdown', function (pointer) {
-			testFunction(pointer.x, pointer.y);
+			testFunction(Math.ceil(this.player.x/cell_size_x), Math.ceil(this.player.y/cell_size_y), this); // "this" allows function.js to know where the game exists
 		}, this);
 	}
 
@@ -106,3 +114,5 @@ class SceneDebugEnv extends Phaser.Scene {
 		}
 	}
 };
+
+export default SceneDebugEnv;

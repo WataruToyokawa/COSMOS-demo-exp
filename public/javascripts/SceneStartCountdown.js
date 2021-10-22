@@ -54,3 +54,4 @@ class SceneStartCountdown extends Phaser.Scene {
 	update(){}
 };
 
+export default SceneStartCountdown;
