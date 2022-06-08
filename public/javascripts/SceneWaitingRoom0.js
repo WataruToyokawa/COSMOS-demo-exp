@@ -1,15 +1,19 @@
 // SceneWaitingRoom0
 
+import {configWidth
+	, nomalTextColor
+	, noteColor
+} from './global_const_values.js';
+
 import {rand
 	, isNotNegative
 	, BoxMuller
 	, sum
 	, waitingBarCompleted
-	, debug_pointerdown
 	, sending_core_is_ready
 	, goToQuestionnaire
 	, settingConfirmationID
-	, testFunction
+	// , testFunction
 } from './functions.js';
 
 
@@ -52,7 +56,7 @@ class SceneWaitingRoom0 extends Phaser.Scene {
 		    }
 		});
 		percentText.setOrigin(0.5, 0.5);
-		// loading stuff
+		// ---- loading stuff -----
 	    this.load.image('button', 'assets/button.001.png');
 	    this.load.image('button_active', 'assets/button.active.png');
 		this.load.image('bonusBarFrame', 'assets/bar.png');
@@ -62,14 +66,7 @@ class SceneWaitingRoom0 extends Phaser.Scene {
 		this.load.image('energycontainer', 'assets/energycontainer.png');
 		this.load.image('energybar', 'assets/energybar.png');
 
-		// dude
-		// for (let i=1; i<25; i++) {
-		// 	if (i < 10) {
-		// 		this.load.image('player_0'+i, 'assets/Player/player_0'+i+'.png');
-		// 	} else {
-		// 		this.load.image('player_'+i, 'assets/Player/player_'+i+'.png');
-		// 	}
-		// }
+		// ---- Loading the players' avatar ----
 		this.load.pack("pack", "assets/preload-asset-pack.json");
 		
 

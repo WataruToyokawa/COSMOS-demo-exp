@@ -1,15 +1,19 @@
 // SceneWaitingRoom2
 
+import {configWidth
+	, nomalTextColor
+	, noteColor
+} from './global_const_values.js';
+
 import {rand
 	, isNotNegative
 	, BoxMuller
 	, sum
 	, waitingBarCompleted
-	, debug_pointerdown
 	, sending_core_is_ready
 	, goToQuestionnaire
 	, settingConfirmationID
-	, testFunction
+	// , testFunction
 } from './functions.js';
 
 class SceneWaitingRoom2 extends Phaser.Scene {

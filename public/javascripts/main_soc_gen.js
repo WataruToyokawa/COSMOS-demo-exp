@@ -1,12 +1,15 @@
 /*
 
-A multi-player 2D continuous bandit task
+COSMOS demo -- a multi-armed bandit problem 
 Author: Wataru Toyokawa (wataru.toyokawa@uni-konstanz.de)
-05 October 2021
+24 April 2022
 
-1. The task is basically the same as Wu et al. 2018 Nat. Hum. Behav.
-2. However, it is a multi-player game (that proceeds trial-by-trial bases)
-3. The connection is Server-Client (not the P2P connection) and synchronized by the server
+This file is taking care of the following things:
+
+1. Configuring the game = new Phaser.Game(config);
+2. Listening socket.on('signal-from-server', function (data) { Do something with data you received });
+3. The game is built upon the browser window, that is, everything is happening after "window.onload"
+4. If you want to communicate with object defined in each scene, use "game.scene.keys.SCENE_NAME.OBJECT_NAME"
 
 */
 
@@ -17,23 +20,41 @@ import SceneWaitingRoom0 from './SceneWaitingRoom0.js';
 import SceneWaitingRoom from './SceneWaitingRoom.js';
 import SceneWaitingRoom2 from './SceneWaitingRoom2.js';
 import SceneDebugEnv from './SceneDebugEnv.js';
+import SceneDemoIndiv from './SceneDemoIndiv.js';
+import SceneDemoGroup from './SceneDemoGroup.js';
 import SceneDebugPopup from './SceneDebugPopup.js';
 import SceneSocialWindow from './SceneSocialWindow.js';
 import ScenePerfect from './ScenePerfect.js';
 import SceneStartCountdown from './SceneStartCountdown.js';
 import SceneFeedback from './SceneFeedback.js';
+import SceneResult from './SceneResult.js';
 
-// ===== Functions =============================
+
+// ===== Functions and const values =============================
+import {configWidth
+    , fieldHeight
+    , fieldWidth
+    , cell_size_x
+    , cell_size_y
+    , num_cell
+    , configHeight
+    , portnumQuestionnaire
+    , socket
+    , htmlServer
+    , exceptions
+} from './global_const_values.js';
+
 import {rand
 	, isNotNegative
 	, BoxMuller
 	, sum
 	, waitingBarCompleted
-	, debug_pointerdown
 	, sending_core_is_ready
 	, goToQuestionnaire
 	, settingConfirmationID
-	, testFunction
+	// , testFunction
+    , move_other_player
+    , wake_main_stage_up
 } from './functions.js';
 
 const myData = [];
@@ -103,27 +124,6 @@ window.onload = function() {
     });
     //======== end: monitoring tab activity =====
 
-
-	// ======== SceneMain -- main scene; experimental task ========
-	// class SceneMain extends Phaser.Scene {
-
-	// 	constructor (){
-	// 	    super({ key: 'SceneMain', active: false });
-	// 	}
-
-	// 	preload(){
-	// 		}
-
-	// 	create(){
-
-
-	// 	}
-	// 	update(){
-
-	// 	}
-	// };
-	// ======== end: SceneMain -- main scene; experimental task ========
-
 	let config = {
 	    type: Phaser.AUTO, // Phaser.CANVAS, Phaser.WEBGL, or Phaser.AUTO
 	    width: configWidth,
@@ -150,25 +150,31 @@ window.onload = function() {
 	    [ SceneWaitingRoom0
 	    , SceneWaitingRoom
 	    , SceneWaitingRoom2
+        , SceneDemoIndiv
+        , SceneDemoGroup
 	    , SceneDebugEnv
 	    , SceneDebugPopup
     	, ScenePerfect
     	, SceneStartCountdown
     	, SceneSocialWindow
         , SceneFeedback
+        , SceneResult
     	]
 	};
 
-	var game = new Phaser.Game(config);
+	let game = new Phaser.Game(config);
 	game.scene.add('SceneWaitingRoom0');
 	game.scene.add('SceneWaitingRoom');
 	game.scene.add('SceneWaitingRoom2');
+    game.scene.add('SceneDemoIndiv');
+    game.scene.add('SceneDemoGroup');
 	game.scene.add('SceneDebugEnv');
 	game.scene.add('SceneDebugPopup')
 	game.scene.add('ScenePerfect');
 	game.scene.add('SceneStartCountdown');
 	game.scene.add('SceneSocialWindow');
     game.scene.add('SceneFeedback');
+    game.scene.add('SceneResult');
 
 
 	// I think this ping-pong monitoring is out-of-date; review needed. Discarded in the future
@@ -185,18 +191,13 @@ window.onload = function() {
         maxChoiceStageTime = data.maxChoiceStageTime;
         indivOrGroup = data.indivOrGroup;
         exp_condition = data.exp_condition; //binary_4ab
+
         riskDistributionId = data.riskDistributionId;
         subjectNumber = data.subjectNumber;
-        // isLeftRisky = data.isLeftRisky;
-        // numOptions = data.numOptions;
         optionOrder = data.optionOrder;
-        // console.log('this is your optionOrder: ' + optionOrder);
-        //setSlotPosition(data.isLeftRisky);
-        // if (numOptions == 2) {
-        // 	settingRiskDistribution(data.riskDistributionId);
-        // } else {
-        // 	settingRiskDistribution_4ab(data.riskDistributionId);
-        // }
+        maxGroupSize = data.maxGroupSize;
+
+        // console.log('option order is ' + optionOrder);
 
         // avoiding safari's reload function
         if(!window.sessionStorage.getItem('uniqueConfirmationID')) {
@@ -246,6 +247,7 @@ window.onload = function() {
         // isLeftRisky = data.isLeftRisky;
         indivOrGroup = data.indivOrGroup;
         maxChoiceStageTime = data.maxChoiceStageTime;
+        currentGroupSize = data.n;
         $("#indivOrGroup").val(indivOrGroup);
         $("#bonus_for_waiting").val(Math.round(waitingBonus));
         ////console.log('your indivOrGroup is ' + $("#indivOrGroup").val());
@@ -258,7 +260,11 @@ window.onload = function() {
         game.scene.sleep('SceneWaitingRoom');
 
         // For the debug,
-        game.scene.start('SceneDebugEnv');
+        if (indivOrGroup == 0) {
+            game.scene.start('SceneDemoIndiv');
+        } else {
+            game.scene.start('SceneDemoGroup');
+        }
         // For the experiment
         // game.scene.start('SceneInstruction', data);
         
@@ -277,7 +283,10 @@ window.onload = function() {
     });
 
     socket.on('client disconnected', function(data) {
-        console.log('client disconnected ' + data.disconnectedClient + ' left the room');
+        console.log('client disconnected. subjectNumber = ' + data.disconnectedSubjectNumber + ' left the room');
+        other_player_visibility_array[data.disconnectedSubjectNumber - 1] = false;
+        other_player_array[data.disconnectedSubjectNumber - 1].visible = false;
+        currentGroupSize = data.roomStatus['n']
     });
 
     socket.on('these are done subjects', function(data) {
@@ -295,13 +304,12 @@ window.onload = function() {
         $("#exp_condition").val(exp_condition);
         //$("#confirmationID").val(confirmationID);
         $("#bonus_for_waiting").val(Math.round(waitingBonus));
-        payoffText.destroy();
-        waitOthersText.destroy();
-        for (let i =1; i<numOptions+1; i++) {
-        	objects_feedbackStage['box'+i].destroy();
-        }
-    	game.scene.sleep('ScenePayoffFeedback');
-    	game.scene.start('SceneMain');
+        // payoffText.destroy();
+        // waitOthersText.destroy();
+        // for (let i =1; i<numOptions+1; i++) {
+        // 	objects_feedbackStage['box'+i].destroy();
+        // }
+    	wake_main_stage_up(game, indivOrGroup);
     	//console.log('restarting the main scene!: mySocialInfo = '+data.socialFreq[data.round-1]);
     });
 
@@ -340,6 +348,77 @@ window.onload = function() {
 	    } else {
 	    	console.log('Received: "S_to_C_welcomeback" but the understanding test is not started yet: client = '+data.sessionName +'; room = '+data.roomName);
 	    }
+    });
+
+    // --- When receiving 'avatar_position_update' from the server ----
+    socket.on('avatar_position_update', function (data) {
+        // console.log('Subject ' + data.subjectNumber + ' moves to x = ' + data.x + ' and y = ' + data.y);
+        let new_target = new Phaser.Math.Vector2(); 
+        let x_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_x/3);
+        let y_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_y/3);
+        new_target.x = data.x + x_jitter;
+        new_target.y = data.y + y_jitter;
+        others_target_array[data.subjectNumber - 1] = new_target;
+        // Move at 200 px/s:
+        game.scene.keys.SceneDemoGroup.physics.moveToObject(other_player_array[data.subjectNumber - 1], new_target, 700);
+        // if (subjectNumber != data.subjectNumber) {
+        //     other_player_array[data.subjectNumber - 1].visible = true; // if this is from other subject
+        // }
+    });
+
+    socket.on('show_chart', function (data) {
+        game.scene.start('SceneResult');
+        game.scene.stop('SceneFeedback');
+
+        const ctx = window.document.getElementById('myChart'); // myChart
+        let data_contents = [{
+            label: 'Your choices',
+            data: myChoices,
+            borderColor: 'rgba(255, 100, 100, 0.9)',
+            lineTension: 0,
+            fill: false,
+            borderWidth: 3
+        }];
+
+        for (let i = 0; i < currentGroupSize; i++) {
+            let others_choices = [];
+            for (let t = 0; t < horizon; t++) {
+                others_choices.push(data.socialInfo[t][i])
+            }
+            if (i+1 != subjectNumber) {
+                data_contents.push({
+                    // label: 'subject ' + (i+1) + '\'s choices',
+                    label: '',
+                    data: others_choices,
+                    borderColor: 'rgba(147, 147, 147, 0.3)',
+                    lineTension: 0,
+                    fill: false,
+                    borderWidth: 1
+                });
+            }
+        }
+
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: horizon}, (_, i) => i + 1),
+                datasets: data_contents
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: num_cell * num_cell + 1
+                    }
+                },
+                plugins: {
+                    legend: {
+                        //onClick: newLegendClickHandler
+                        display: false
+                    }
+                }
+            }
+        });
     });
 
 } // window.onload -- end

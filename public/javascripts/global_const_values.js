@@ -1,7 +1,7 @@
 'use strict';
 
 // === Socket.io ====
-const portnumQuestionnaire = 8000
+export const portnumQuestionnaire = 8000
 	// , htmlServer = 'http://192.168.33.10:' // vagrant server (for debug)
 	, htmlServer = 'http://63-250-60-135.cloud-xip.io:' //ipaddress 63.250.60.135
 	, exceptions = ['INHOUSETEST3', 'debug-20211021']
@@ -9,11 +9,11 @@ const portnumQuestionnaire = 8000
 ;
 
 // ==== Basic parameters ====
-const configWidth = 768 //800
+export const configWidth = 768 //800
 	, configHeight = 768 // 600
 	, fieldWidth = configWidth * 0.75
 	, fieldHeight = configHeight * 0.75
-	, num_cell = 8
+	, num_cell = 4
 	, cell_size_x = fieldWidth / num_cell
 	, cell_size_y = fieldHeight / num_cell
 	, optionWidth = 150
@@ -23,90 +23,10 @@ const configWidth = 768 //800
 	, nomalTextColor = '#000000' // black
 ;
 
-// ==== Variables that change during the task =====
-let isEnvironmentReady = false
-	, isPreloadDone = false
-	, isWaitingRoomStarted = false
-	, myChoices = []
-	, myEarnings = []
-	, payoff
-	, payoffTransformed
-	, totalEarning = 0
-	, cent_per_point = 2/100 // 1 cent per 100 points
-	, browserHiddenPermittedTime = 10 * 1000
-	, sessionName
-	, roomName
-	, subjectNumber
-	, indivOrGroup
-	, exp_condition
-	, riskDistributionId
-	, optionOrder
-	, maxChoiceStageTime
-	, currentTrial = 1
-	, choiceOrder
-	, currentChoiceFlag = 0
-	, waitingBonus = 0
-	, confirmationID = 'browser-reloaded'
-	, maxGroupSize
-	, maxWaitingTime
-	, horizon = 0
-	, myRoom
-	, startTime
-	, doneSubject
-	, pointCentConversionRate = 0
-	, completed = 0
-	, waitingRoomFinishedFlag = 0
-	, understandingCheckStarted = 0
-	, averageLatency = [0,0]
-	, submittedLatency = -1
-	, mySocialInfoList = {option1:0, option2:0, option3:0, option4:0}
-	, mySocialInfo
-	, myPublicInfo
-	, myLastChoice
-	, myLastChoiceFlag
-	, emitting_time = 0
-	, restTime
-	, waitingBox
-	, waitingBar
-	, waitingCountdown
-	, bonusBar
-	, bonusBox
-	, countdownText
-	, bonusText
-;
-
-// let config = {
-// 	type: Phaser.AUTO, // Phaser.CANVAS, Phaser.WEBGL, or Phaser.AUTO
-// 	width: configWidth,
-// 	height: configHeight,
-// 	physics: {
-// 		default: 'arcade',
-// 		arcade: {
-// 			gravity: { y: 0 },
-// 			debug: false
-// 		}
-// 	},
-// 	parent: 'phaser-game-main',
-// 	scale: {
-// 		_mode: Phaser.Scale.FIT,
-// 		parent: 'phaser-game-main',
-// 		autoCenter: Phaser.Scale.CENTER_BOTH,
-// 		width: configWidth,
-// 		height: configHeight
-// 	},
-// 	dom: {
-// 		createContainer: true
-// 	},
-// 	scene:
-// 	[ SceneWaitingRoom0
-// 	, SceneWaitingRoom
-// 	, SceneWaitingRoom2
-// 	, SceneDebugEnv
-// 	, sceneDebugPopup
-// 	, ScenePerfect
-// 	, SceneStartCountdown
-// 	, SceneMain
-// 	]
-// };
-
-// let game = new Phaser.Game(config);
+// === colours ======
+export const Primary = 0x521B93
+export const PrimaryLight = 0x832AEE
+export const Background = 0x421278
+export const Secondary = 0xFFAD00
+export const White = 0xffffff
+export const Rainbow = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x2E2B5F, 0x8B00FF]

@@ -1,8 +1,16 @@
 'use strict';
 
-import {debug_pointerdown
-	, testFunction
-} from './functions.js';
+import {configWidth
+	, fieldHeight
+	, fieldWidth
+	, cell_size_x
+	, cell_size_y
+	, nomalTextColor
+	, num_cell
+} from './global_const_values.js';
+
+// import {testFunction
+// } from './functions.js';
 
 // debug test environment
 class SceneDebugEnv extends Phaser.Scene {

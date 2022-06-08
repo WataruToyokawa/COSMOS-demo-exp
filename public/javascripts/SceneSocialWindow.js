@@ -1,3 +1,10 @@
+'use strict';
+
+import {configWidth
+	, fieldHeight
+	, fieldWidth
+} from './global_const_values.js';
+
 class SceneSocialWindow extends Phaser.Scene {
 
 	constructor (){

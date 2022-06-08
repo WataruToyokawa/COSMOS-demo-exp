@@ -1,0 +1,33 @@
+{
+	"anims": [
+		{
+            "key": "hovering-self",
+            "type": "frame",
+            "frames": [
+                {
+                    "key": "self_1",
+                    "duration": 0,
+                    "keyframe": false
+                },
+                {
+                    "key": "self_2",
+                    "duration": 0,
+                    "keyframe": false
+                },
+                {
+                    "key": "self_3",
+                    "duration": 0,
+                    "keyframe": false
+                }
+            ],
+            "frameRate": 10,
+            "skipMissedFrames": true,
+            "repeat": -1
+        }
+	],
+    "globalTimeScale": 1,
+    "meta": {
+        "app": "Phaser Editor 2D v3",
+        "contentType": "Phaser v3 Animations"
+    }
+}
