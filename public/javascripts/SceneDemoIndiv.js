@@ -33,13 +33,14 @@ class SceneDemoIndiv extends Phaser.Scene {
 
 		// --- Creating options ---
 		let options = {}
+		this.options = options
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
 				// this.add.image(0, 0, 'Loewenbraeu_Logo.svg').setOrigin(0, 0).setScale(0.75);
-				options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x, (j-1/2)*cell_size_y, cell_size_x, cell_size_y);
-				options['box'+i+j].setStrokeStyle(6, 0x1a65ac).setInteractive();
+				this.options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x, (j-1/2)*cell_size_y, cell_size_x, cell_size_y);
+				this.options['box'+i+j].setStrokeStyle(6, 0x1a65ac).setInteractive();
 				// function
-				options['box'+i+j].on('pointerover', function (pointer) {
+				this.options['box'+i+j].on('pointerover', function (pointer) {
 					/* ====================================================================
 						NOTE:
 						Past rewards should be stored as a list

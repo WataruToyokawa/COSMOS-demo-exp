@@ -42,7 +42,7 @@ const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
 , maxGroupSize = 60 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 20*1000 //3*60*1000
+, maxWaitingTime = 3*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
@@ -550,7 +550,7 @@ io.on('connection', function (client) {
 		let this_round_temp = roomStatus[client.room]['round']
 		,	this_subject_temp = client.subjectNumber
 		;
-		if (typeof this_subject_temp != 'undefined' & typeof roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] != 'undefined') {
+		if (typeof this_subject_temp != 'undefined' & typeof client.room != 'undefined' & typeof roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] != 'undefined') {
 			roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] = data.box_quality;
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1][this_subject_temp - 1] = data.payoff;
 		} else {

@@ -30,3 +30,8 @@ export const Background = 0x421278
 export const Secondary = 0xFFAD00
 export const White = 0xffffff
 export const Rainbow = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x2E2B5F, 0x8B00FF]
+
+// === text box colours ==
+export const COLOR_PRIMARY_TEXTBOX = 0x4e342e;
+export const COLOR_LIGHT_TEXTBOX = 0x7b5e57;
+export const COLOR_DARK_TEXTBOX = 0x260e04;

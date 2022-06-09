@@ -28,7 +28,7 @@ import ScenePerfect from './ScenePerfect.js';
 import SceneStartCountdown from './SceneStartCountdown.js';
 import SceneFeedback from './SceneFeedback.js';
 import SceneResult from './SceneResult.js';
-
+// import UIPlugin from '../../node_modules/phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 // ===== Functions and const values =============================
 import {configWidth

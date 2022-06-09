@@ -1,7 +1,6 @@
 'use strict';
 
-import {configWidth
-	, fieldHeight
+import {fieldHeight
 	, fieldWidth
 	, cell_size_x
     , cell_size_y
@@ -29,6 +28,7 @@ class SceneDebugPopup extends Phaser.Scene {
 		,	popup_x
 		,	popup_y
 		;
+		this.popup = popup
 
 		if (this.pointer_x > 0 & this.pointer_x < fieldWidth) {
 			popup_x = Math.floor( this.pointer_x / cell_size_x) * cell_size_x + cell_size_x / 2
@@ -46,8 +46,8 @@ class SceneDebugPopup extends Phaser.Scene {
 			popup_y = Math.floor( fieldHeight / cell_size_y) * cell_size_y - cell_size_y / 2
 		}
 
-		popup = this.add.rectangle(popup_x, popup_y, cell_size_x, cell_size_y);
-		popup.setFillStyle(0x6666ff, 0.6);
+		this.popup = this.add.rectangle(popup_x, popup_y, cell_size_x, cell_size_y);
+		this.popup.setFillStyle(0x6666ff, 0.6);
 
 	}
 

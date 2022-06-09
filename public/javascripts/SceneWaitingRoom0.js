@@ -66,6 +66,8 @@ class SceneWaitingRoom0 extends Phaser.Scene {
 		this.load.image('energycontainer', 'assets/energycontainer.png');
 		this.load.image('energybar', 'assets/energybar.png');
 
+		// this.load.scenePlugin('rexuiplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js', 'rexUI', 'rexUI');
+
 		// ---- Loading the players' avatar ----
 		this.load.pack("pack", "assets/preload-asset-pack.json");
 		

@@ -1,20 +1,17 @@
 'use strict';
 
-import {configWidth
-	, configHeight
-	, fieldHeight
-	, fieldWidth
+import {cell_size_x
+    , cell_size_y
 	, Rainbow
-	, Background
-	, Primary
 	, Secondary
-	, PrimaryLight
+	, fieldHeight
 } from './global_const_values.js';
 
-import {wake_main_stage_up
-	// , go_to_summary_page
-	, emit_this_trial_is_done
+import {emit_this_trial_is_done
+	, createTextBox
 } from './functions.js';
+
+
 
 // ==== Other classes ====================================
 import DotsEater from './DotsEater.js';
@@ -26,32 +23,37 @@ class SceneFeedback extends Phaser.Scene {
 	}
 
 	preload(){
+		this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });
 	}
 
 	init (data) {
 		this.payoff = data.payoff;
 		this.clicked_box_position = data.clicked_box_position;
 		this.box_quality = data.box_quality;
+		this.x_pos = data.x * cell_size_x - cell_size_x/2;
+		this.y_pos = data.y * cell_size_y - cell_size_y/2;
 	}
 
 	create(){
 		//  --- DotEater animation ---- (see phaser3-loading-animations-premium)
 		const loadingObj = this.add.container()
 		this.loadingObj = loadingObj
-		DotsEater.create(this, fieldWidth/2, fieldHeight/2 + 100)
+		DotsEater.create(this, this.x_pos, this.y_pos+20) //fieldWidth/2, fieldHeight/2 + 100
 						.useEaterColor(Secondary)
 						.useDotColor(...Rainbow)
 						.addToContainer(this.loadingObj)
 						.play()
 
 		// --- background colour ---
-		this.cameras.main.setBackgroundColor(0xffffff); //#FFFFFF == 'white'
+		// this.cameras.main.setBackgroundColor(0xffffff); //#FFFFFF == 'white'
 
 		// --- Announcement Text ----
 		if (indivOrGroup == 1 & currentGroupSize > 1) {
-			let waitOthersText = this.add.text(16, 60, 'Please wait for others...', { fontSize: '30px', fill: '#000'});
-		} else {
-			let waitOthersText = this.add.text(16, 60, '', { fontSize: '30px', fill: '#000'});
+			let waitOthersText = this.add.text(100, fieldHeight + 60, 'Please wait for others...', { fontSize: '30px', fill: '#000'});
 		}
 
 		// --- OK! button ---
@@ -85,7 +87,11 @@ class SceneFeedback extends Phaser.Scene {
 
 		// }, this);
 
-		this.add.text(fieldWidth/2, fieldHeight/2, 'You got '+ this.payoff +' points!', { fontSize: '50px', fill: '#000' }).setOrigin(0.5, 0.5);
+		// this.add.text(this.x_pos, this.y_pos + 40, ''+this.payoff+' points!', { fontSize: '25px', fill: '#000' }).setOrigin(0.5, 0.5);
+		createTextBox(this, this.x_pos - 45, this.y_pos - 60, {
+			wrapWidth: 450,
+		}).start(''+this.payoff+' points!', 50);
+		
 
 		// Updating the choice history data
 		myChoices.push(this.box_quality);

@@ -5,6 +5,9 @@ import {maxLatencyForGroupCondition
 	, socket
 	, cell_size_x
 	, cell_size_y
+	, COLOR_PRIMARY_TEXTBOX
+	, COLOR_LIGHT_TEXTBOX
+	, COLOR_DARK_TEXTBOX
 } from './global_const_values.js';
 
 /* ========================================
@@ -97,26 +100,64 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 	
 	this_game.player.removeInteractive();
 	this_game.player.clearTint();
-	this_game.game.scene.start('SceneFeedback', {payoff:payoff, clicked_box_position:clicked_box_position, box_quality:box_quality, this_trial_num:this_trial_num});
-	// this_game.game.scene.sleep('SceneDebugEnv');
+	this_game.game.scene.start('SceneFeedback', {payoff:payoff, x:x, y:y, clicked_box_position:clicked_box_position, box_quality:box_quality, this_trial_num:this_trial_num});
+	this_game.game.scene.keys.SceneDebugPopup.popup.visible = false;
 	if (indivOrGroup == 0) {
-		this_game.game.scene.sleep('SceneDemoIndiv');
+		this_game.game.scene.keys.SceneDemoIndiv.player.visible = false;
+		this_game.game.scene.keys.SceneDemoIndiv.player.removeInteractive();
+		for (let i = 1; i < num_cell+1; i++) {
+			for (let j = 1; j < num_cell+1; j++) {
+				this_game.game.scene.keys.SceneDemoIndiv.options['box'+i+j].removeInteractive();
+			}
+		}
 	} else {
-		this_game.game.scene.sleep('SceneDemoGroup');
+		this_game.game.scene.keys.SceneDemoGroup.isSceneDemoGroupActive = false;
+		this_game.game.scene.keys.SceneDemoGroup.player.visible = false;
+		this_game.game.scene.keys.SceneDemoGroup.player.removeInteractive();
+		for (let i = 1; i < num_cell+1; i++) {
+			for (let j = 1; j < num_cell+1; j++) {
+				this_game.game.scene.keys.SceneDemoGroup.options['box'+i+j].removeInteractive();
+			}
+		}
+		for (let i = 0; i < maxGroupSize; i++) {
+			other_player_array[i].visible = false;
+		}
+		// remove timer object
+		this_game.game.scene.keys.SceneDemoGroup.energyContainer.visible = false;
+		this_game.game.scene.keys.SceneDemoGroup.energyBar.visible = false;
 	}
+
 	this_game.gameTimer.destroy(); // stop the timer
 	this_game.energyMask.x = this_game.energyBar.x // reset the countdown bar length
 }
 
 export function wake_main_stage_up (game, indivOrGroup = 0) {
+	// game.scene.wake('SceneDebugPopup');
+	game.scene.keys.SceneDebugPopup.popup.visible = true;
+	needATimer = true;
+	needAFeedback = true;
 	if (indivOrGroup == 0) {
-		game.scene.wake('SceneDemoIndiv');
-		needATimer = true;
-		needAFeedback = true;
+		game.scene.keys.SceneDemoIndiv.player.visible = true;
+		game.scene.keys.SceneDemoIndiv.player.setInteractive();
+		for (let i = 1; i < num_cell+1; i++) {
+			for (let j = 1; j < num_cell+1; j++) {
+				game.scene.keys.SceneDemoIndiv.options['box'+i+j].setInteractive();
+			}
+		}
 	} else {
-		game.scene.wake('SceneDemoGroup');
-		needATimer = true;
-		needAFeedback = true;
+		game.scene.keys.SceneDemoGroup.isSceneDemoGroupActive = true;
+		game.scene.keys.SceneDemoGroup.player.visible = true;
+		game.scene.keys.SceneDemoGroup.player.setInteractive();
+		for (let i = 1; i < num_cell+1; i++) {
+			for (let j = 1; j < num_cell+1; j++) {
+				game.scene.keys.SceneDemoGroup.options['box'+i+j].setInteractive();
+			}
+		}
+		for (let i = 0; i < maxGroupSize; i++) {
+			other_player_array[i].visible = other_player_visibility_array[i];
+		}
+		game.scene.keys.SceneDemoGroup.energyContainer.visible = true;
+		game.scene.keys.SceneDemoGroup.energyBar.visible = true;
 	}
 	game.scene.stop('SceneFeedback');
 }
@@ -191,4 +232,116 @@ export function countdownBarStarts (this_game, maxChoiceStageTime) {
 // 	result.render();
 // }
 
+const GetValue = Phaser.Utils.Objects.GetValue;
+export function createTextBox (scene, x, y, config) {
+    var wrapWidth = GetValue(config, 'wrapWidth', 0);
+    var fixedWidth = GetValue(config, 'fixedWidth', 0);
+    var fixedHeight = GetValue(config, 'fixedHeight', 0);
+    var textBox = scene.rexUI.add.textBox({
+            x: x,
+            y: y,
 
+            background: CreateSpeechBubbleShape(scene, COLOR_PRIMARY_TEXTBOX, COLOR_LIGHT_TEXTBOX),
+
+            icon: scene.rexUI.add.roundRectangle(0, 0, 2, 2, 20, COLOR_DARK_TEXTBOX),
+
+            // text: getBuiltInText(scene, wrapWidth, fixedWidth, fixedHeight),
+            text: getBBcodeText(scene, wrapWidth, fixedWidth, fixedHeight),
+
+            //action: scene.add.image(0, 0, 'nextPage').setTint(COLOR_LIGHT).setVisible(false),
+
+        space: {
+            left: 10, right: 10, top: 10, bottom: 25,
+            icon: 10,
+            text: 10,
+        }
+        })
+        .setOrigin(0, 0.5)
+        .layout();
+
+    // textBox
+    //     .setInteractive()
+    //     .on('pointerdown', function () {
+    //         var icon = this.getElement('action').setVisible(false);
+    //         this.resetChildVisibleState(icon);
+    //         if (this.isTyping) {
+    //             this.stop(true);
+    //         } else {
+    //             this.typeNextPage();
+    //         }
+    //     }, textBox)
+    //     .on('pageend', function () {
+    //         if (this.isLastPage) {
+    //             return;
+    //         }
+
+    //         var icon = this.getElement('action').setVisible(true);
+    //         this.resetChildVisibleState(icon);
+    //         icon.y -= 30;
+    //         var tween = scene.tweens.add({
+    //             targets: icon,
+    //             y: '+=30', // '+=100'
+    //             ease: 'Bounce', // 'Cubic', 'Elastic', 'Bounce', 'Back'
+    //             duration: 500,
+    //             repeat: 0, // -1: infinity
+    //             yoyo: false
+    //         });
+    //     }, textBox)
+    // //.on('type', function () {
+    // //})
+
+    return textBox;
+}
+
+export function getBuiltInText (scene, wrapWidth, fixedWidth, fixedHeight) {
+    return scene.add.text(0, 0, '', {
+            fontSize: '20px',
+            wordWrap: {
+                width: wrapWidth
+            },
+            maxLines: 3
+        })
+        .setFixedSize(fixedWidth, fixedHeight);
+}
+
+export function getBBcodeText (scene, wrapWidth, fixedWidth, fixedHeight) {
+    return scene.rexUI.add.BBCodeText(0, 0, '', {
+        fixedWidth: fixedWidth,
+        fixedHeight: fixedHeight,
+
+        fontSize: '20px',
+        wrap: {
+            mode: 'word',
+            width: wrapWidth
+        },
+        maxLines: 3
+    })
+}
+
+export function CreateSpeechBubbleShape (scene, fillColor, strokeColor) {
+    return scene.rexUI.add.customShapes({
+        create: { lines: 1 },
+        update: function () {
+            var radius = 20;
+            var indent = 15;
+
+            var left = 0, right = this.width,
+                top = 0, bottom = this.height, boxBottom = bottom - indent;
+            this.getShapes()[0]
+                .lineStyle(2, strokeColor, 1)
+                .fillStyle(fillColor, 1)
+                // top line, right arc
+                .startAt(left + radius, top).lineTo(right - radius, top).arc(right - radius, top + radius, radius, 270, 360)
+                // right line, bottom arc
+                .lineTo(right, boxBottom - radius).arc(right - radius, boxBottom - radius, radius, 0, 90)
+                // bottom indent                    
+                .lineTo(left + 60, boxBottom).lineTo(left + 50, bottom).lineTo(left + 40, boxBottom)
+                // bottom line, left arc
+                .lineTo(left + radius, boxBottom).arc(left + radius, boxBottom - radius, radius, 90, 180)
+                // left line, top arc
+                .lineTo(left, top + radius).arc(left + radius, top + radius, radius, 180, 270)
+                .close();
+
+        }
+    })
+}

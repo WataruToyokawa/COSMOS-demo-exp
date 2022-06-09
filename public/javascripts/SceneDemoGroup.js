@@ -43,15 +43,21 @@ class SceneDemoGroup extends Phaser.Scene {
 		let historyText = this.add.text(16, fieldHeight + 16, 'You are in zone ???', { fontSize: '25px', fill: '#000' });
 		this.historyText = historyText;
 
+		// --- monitoring the activity of this stage ---
+		let isSceneDemoGroupActive
+		this.isSceneDemoGroupActive = isSceneDemoGroupActive
+		this.isSceneDemoGroupActive = true
+
 		// --- Creating options ---
 		let options = {}
+		this.options = options
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
 				// this.add.image(0, 0, 'Loewenbraeu_Logo.svg').setOrigin(0, 0).setScale(0.75);
-				options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x, (j-1/2)*cell_size_y, cell_size_x, cell_size_y);
-				options['box'+i+j].setStrokeStyle(6, 0x1a65ac).setInteractive();
+				this.options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x, (j-1/2)*cell_size_y, cell_size_x, cell_size_y);
+				this.options['box'+i+j].setStrokeStyle(6, 0x1a65ac).setInteractive();
 				// function
-				options['box'+i+j].on('pointerover', function (pointer) {
+				this.options['box'+i+j].on('pointerover', function (pointer) {
 					/* ====================================================================
 						NOTE:
 						Past rewards should be stored as a list
@@ -80,21 +86,22 @@ class SceneDemoGroup extends Phaser.Scene {
 		// --- Countdown timer ---
 		// =============== A looking-good timer =================================
 		let energyContainer = this.add.sprite(100, fieldHeight + 60, 'energycontainer'); // the energy container. 
-		this.energyBar = this.add.sprite(energyContainer.x + 46, energyContainer.y, 'energybar'); // the energy bar. 
+		this.energyContainer = energyContainer
+		this.energyBar = this.add.sprite(this.energyContainer.x + 46, this.energyContainer.y, 'energybar'); // the energy bar. 
 		// a copy of the energy bar to be used as a mask. Another simple sprite but...
 		this.energyMask = this.add.sprite(this.energyBar.x, this.energyBar.y, 'energybar');
 		// ...it's not visible...
 		this.energyMask.visible = false;
 		// resize them
-		let energyContainer_originalWidth = energyContainer.displayWidth
+		let energyContainer_originalWidth = this.energyContainer.displayWidth
 		,	energyContainer_newWidth = 200
-		,	container_bar_ratio = this.energyBar.displayWidth / energyContainer.displayWidth
+		,	container_bar_ratio = this.energyBar.displayWidth / this.energyContainer.displayWidth
 		;
-		energyContainer.displayWidth = energyContainer_newWidth;
-		energyContainer.scaleY = energyContainer.scaleX;
+		this.energyContainer.displayWidth = energyContainer_newWidth;
+		this.energyContainer.scaleY = this.energyContainer.scaleX;
 		this.energyBar.displayWidth = energyContainer_newWidth * container_bar_ratio;
 		this.energyBar.scaleY = this.energyBar.scaleX;
-		this.energyBar.x = energyContainer.x + (46 * energyContainer_newWidth/energyContainer_originalWidth);
+		this.energyBar.x = this.energyContainer.x + (46 * energyContainer_newWidth/energyContainer_originalWidth);
 		this.energyMask.displayWidth = this.energyBar.displayWidth;
 		this.energyMask.scaleY = this.energyMask.scaleX;
 		this.energyMask.x = this.energyBar.x;
@@ -106,30 +113,33 @@ class SceneDemoGroup extends Phaser.Scene {
 		// --- What happens when click events fire ------
 		this.input.on('pointerdown', function (pointer) {
 
-			if (pointer.x > 0 & pointer.x < fieldWidth) {
-				this.target.x = Math.floor( pointer.x / cell_size_x) * cell_size_x + cell_size_x / 2
-			} else if (pointer.x <= 0) {
-				this.target.x = cell_size_x / 2
-			} else {
-				this.target.x = Math.floor( fieldWidth / cell_size_x) * cell_size_x - cell_size_x / 2
+			if (this.isSceneDemoGroupActive) {
+
+				if (pointer.x > 0 & pointer.x < fieldWidth) {
+					this.target.x = Math.floor( pointer.x / cell_size_x) * cell_size_x + cell_size_x / 2
+				} else if (pointer.x <= 0) {
+					this.target.x = cell_size_x / 2
+				} else {
+					this.target.x = Math.floor( fieldWidth / cell_size_x) * cell_size_x - cell_size_x / 2
+				}
+
+				if (pointer.y > 0 & pointer.y < fieldHeight) {
+					this.target.y = Math.floor( pointer.y / cell_size_y) * cell_size_y + cell_size_y / 2
+				} else if (pointer.y <= 0) {
+					this.target.y = cell_size_y / 2
+				} else {
+					this.target.y = Math.floor( fieldHeight / cell_size_y) * cell_size_y - cell_size_y / 2
+				}
+
+				// Move at 200 px/s:
+				this.physics.moveToObject(this.player, this.target, 400);
+
+				// this.debug.clear().lineStyle(1, 0x00ff00);
+				// this.debug.lineBetween(0, this.target.y, configHeight, this.target.y);
+				// this.debug.lineBetween(this.target.x, 0, this.target.x, configWidth);
+
+				emit_move_avatar(this.target.x, this.target.y);
 			}
-
-			if (pointer.y > 0 & pointer.y < fieldHeight) {
-				this.target.y = Math.floor( pointer.y / cell_size_y) * cell_size_y + cell_size_y / 2
-			} else if (pointer.y <= 0) {
-				this.target.y = cell_size_y / 2
-			} else {
-				this.target.y = Math.floor( fieldHeight / cell_size_y) * cell_size_y - cell_size_y / 2
-			}
-
-			// Move at 200 px/s:
-			this.physics.moveToObject(this.player, this.target, 400);
-
-			// this.debug.clear().lineStyle(1, 0x00ff00);
-			// this.debug.lineBetween(0, this.target.y, configHeight, this.target.y);
-			// this.debug.lineBetween(this.target.x, 0, this.target.x, configWidth);
-
-			emit_move_avatar(this.target.x, this.target.y);
 
 		}, this);
 
@@ -164,8 +174,7 @@ class SceneDemoGroup extends Phaser.Scene {
 			other_player_array[i].play('hovering');
 			other_player_array[i].alpha = 0.5; // Make other player's icon transparent 
 			other_player_array[i].setScale(0.6);
-			other_player_array[i].visible = other_player_visibility_array[i]; // others are invisible before they make their 1st choice
-			
+			other_player_array[i].visible = other_player_visibility_array[i]; // others are invisible before they make their 1st choice	
 		}
 
 	}
@@ -209,7 +218,9 @@ class SceneDemoGroup extends Phaser.Scene {
 					other_player_array[i].body.reset(others_target_array[i].x, others_target_array[i].y);
 					if (other_player_array[i].visible == false && subjectNumber != i + 1) {
 						other_player_visibility_array[i] = true;
-						other_player_array[i].visible = other_player_visibility_array[i];
+						if (this.isSceneDemoGroupActive == true) {
+							other_player_array[i].visible = other_player_visibility_array[i];
+						}
 					}
 				}
 			}
