@@ -101,7 +101,7 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 	this_game.player.removeInteractive();
 	this_game.player.clearTint();
 	this_game.game.scene.start('SceneFeedback', {payoff:payoff, x:x, y:y, clicked_box_position:clicked_box_position, box_quality:box_quality, this_trial_num:this_trial_num});
-	this_game.game.scene.keys.SceneDebugPopup.popup.visible = false;
+	if (typeof this_game.game.scene.keys.SceneDebugPopup.popup != 'undefined') this_game.game.scene.keys.SceneDebugPopup.popup.visible = false;
 	if (indivOrGroup == 0) {
 		this_game.game.scene.keys.SceneDemoIndiv.player.visible = false;
 		this_game.game.scene.keys.SceneDemoIndiv.player.removeInteractive();
@@ -133,7 +133,7 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 
 export function wake_main_stage_up (game, indivOrGroup = 0) {
 	// game.scene.wake('SceneDebugPopup');
-	game.scene.keys.SceneDebugPopup.popup.visible = true;
+	if (typeof game.scene.keys.SceneDebugPopup.popup != 'undefined') game.scene.keys.SceneDebugPopup.popup.visible = true;
 	needATimer = true;
 	needAFeedback = true;
 	if (indivOrGroup == 0) {

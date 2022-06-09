@@ -36,7 +36,7 @@ const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
 , maxGroupSize = 60 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 10*1000 //3*60*1000
+, maxWaitingTime = 30*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
