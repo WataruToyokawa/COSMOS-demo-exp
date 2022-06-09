@@ -24,10 +24,20 @@ const exceptions = ['INHOUSETEST3','debug-20211021'];
 
 /* DEBUG -- INACTIVATE WHEN YOU FINISH DEBUG*/
 router.get('/', function(req, res, next) {
-	res.render('game', {
-		title: 'Online experiment',
-		amazonID: 'INHOUSETEST3' //INHOUSETEST3
-	});
+	// console.log(req.query);
+	if(typeof req.query.amazonID != 'undefined' & typeof req.query.condition != 'undefined') {
+		res.render('game', {
+			title: 'Online experiment',
+			condition: req.query.condition,
+			amazonID: req.query.amazonID //'INHOUSETEST3' //INHOUSETEST3
+		});
+	} else {
+		res.render('game', {
+			title: 'Online experiment -- debug',
+			condition: 'individual',
+			amazonID: 'INHOUSETEST3' //INHOUSETEST3
+		});
+	}
 });
 
 

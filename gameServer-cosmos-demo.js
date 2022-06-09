@@ -15,10 +15,7 @@
 // ============================================================== */
 
 // Loading modules
-const csv = require("fast-csv")
-,	fs = require('fs')
-,	path = require("path")
-,	express = require('express')
+const express = require('express')
 ,	app = express()
 ,	server = require('http').Server(app)
 ,	io = require('socket.io')(server, {
@@ -26,28 +23,24 @@ const csv = require("fast-csv")
 	pingInterval: 20000, // how many ms before sending a new ping packet
 	pingTimeout: 50000 // how many ms without a pong packet to consider the connection closed
 	})
-,	routes = require('./routes')
 ,	bodyParser = require("body-parser")
 ,	portnum = 8080
 ;
 
 // multi-threading like thing in Node.js
-const {isMainThread, Worker} = require('worker_threads');
+const {Worker} = require('worker_threads');
 
-const expFunctions = require('./models/expFunctions');
-const consoleLogInterceptor = require('./models/console-log-interceptor');
 
 // Experimental variables
 const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
 , maxGroupSize = 60 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 3*1000 //3*60*1000
+, maxWaitingTime = 10*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
 , maxTimeTestScene = 4* 60*1000 // 4*60*1000
-, bandit_profile = ['binaru', 'gaussian']
 , options = [];
 ;
 
@@ -58,7 +51,6 @@ for (let i = 1; i <= numOptions; i++) {
 
 // date and time
 let myD = new Date()
-, myYear = myD.getFullYear()
 , myMonth = myD.getMonth() + 1
 , myDate = myD.getUTCDate()
 , myHour = myD.getUTCHours()
@@ -70,16 +62,11 @@ if(myHour<10){myHour = '0'+myHour;}
 if(myMin<10){myMin = '0'+myMin;}
 
 // experimental server
-const currentSubject = 0
-// , firstRoomName = myMonth+myDate+myHour+myMin+'_session_'+sessionNo
-, firstRoomName = makeid(7) + '_session_' + sessionNo
+const firstRoomName = makeid(7) + '_session_' + sessionNo
 ,	roomStatus = {}
-, sessionNameSpace = {}
-, idAssignedThisSession = []
-;
+, sessionNameSpace = {};
 // experimental status
 let total_N_now = 0
-, finish_number
 , countDownMainStage = {}
 , countDownWaiting = {}
 , firstTrialStartingTime // this is to compensate time spent in the task
@@ -99,7 +86,7 @@ const gameRouter = require('./routes/game'); // loading game.ejs from which amaz
 app.use('/', gameRouter);
 
 // error handling
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     console.error(err.stack)
     res.status(500).send('A technical issue happened in the server...😫')
 });
@@ -190,7 +177,11 @@ server.listen(port, function() {
 io.on('connection', function (client) {
 	// client's unique identifier 
 	client.amazonID = client.request._query.amazonID;
+	client.condition = client.request._query.condition;
 	client.started = 0;
+	// client.condition = client.request._query.condition;
+	// console.log('client.request._query.amazon = '+ client.request._query.amazonID);
+	// console.log('client.request._query.condition = '+ client.request._query.condition);
 
 	// Assigning "client.session" as an unique identifier of the participant
 	// If the client already has the sessionName, 
@@ -204,7 +195,7 @@ io.on('connection', function (client) {
 		,	logtxt = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
 		;
 		logtxt += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
-		logtxt += '- sessionName was just assigned to '+ client.session;
+		logtxt += '- sessionName was just assigned to '+ client.session + ' (condition = ' + client.condition + ')';
 		console.log(logtxt);
 
 	} else if (client.request._query.sessionName == 'already_finished'){
@@ -300,7 +291,9 @@ io.on('connection', function (client) {
 		    logtext_coreReady += ' - Client: ' + client.session +'('+client.amazonID+') responds with an average latency = '+ data.latency + ' ms.';
 		    client.latency = data.latency; 
 		    console.log(logtext_coreReady);
-		    if(data.latency < data.maxLatencyForGroupCondition) {
+		    // if(data.latency < data.maxLatencyForGroupCondition) {
+			console.log('client.condition = ' + client.condition)
+			if(client.condition == 'group') {
 		    	// Let the client join the newest room
 			  	client.roomFindingCounter = 1; // default: roomStatus = {'finishedRoom', 'session_100'}
 			  	while (typeof client.room == 'undefined') {
@@ -379,12 +372,13 @@ io.on('connection', function (client) {
 				// Let the client know the specific task's parameters
 				parameterEmitting(client);
 		    } else {
-		    	// else if latency is too large
+		    	// else condition == individual
 		      	// then this subject is go to the individual condition
-		      	client.newRoomName = myMonth+myDate+myHour+myMin+'_largeLatency_' + (sessionNo + Object.keys(roomStatus).length - 1);
+		      	// client.newRoomName = myMonth+myDate+myHour+myMin+'_largeLatency_' + (sessionNo + Object.keys(roomStatus).length - 1);
+				client.newRoomName = myMonth+myDate+myHour+myMin+'_indiv_' + (sessionNo + Object.keys(roomStatus).length - 1);
 				roomStatus[client.newRoomName] = 
 		      	{
-					exp_condition: '', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
+					exp_condition: 'individual', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
 					// riskDistributionId: 20, //getRandomIntInclusive(max = 13, min = 13), // max = 2, min = 0
 					// isLeftRisky: isLeftRisky_list[getRandomIntInclusive(max = 1, min = 0)],
 					optionOrder: shuffle(options),
@@ -431,7 +425,6 @@ io.on('connection', function (client) {
 				if (roomStatus[client.room]['n']===1) {
 					let now_1stIndiv = new Date(),
 					    logdate_1stIndiv = '[' + now_1stIndiv.getUTCFullYear() + '/' + (now_1stIndiv.getUTCMonth() + 1) + '/';
-					let doneNum;
 					logdate_1stIndiv += now_1stIndiv.getUTCDate() + '/' + now_1stIndiv.getUTCHours() + ':' + now_1stIndiv.getUTCMinutes() + ':' + now_1stIndiv.getUTCSeconds() + ']';
 					console.log(logdate_1stIndiv + ' - The first participant came in to the room ' + client.room + '.');
 					startWaitingStageClock(client.room);
@@ -593,7 +586,6 @@ io.on('connection', function (client) {
 			  	// =========  For every 10 rounds, save data to mongodb by loop
 			  	// if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] <= horizon) {
 			  	if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] % 10 == 0) { //if(roomStatus[client.room]['indivOrGroup'] != 0) {
-			  		const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  		roomStatus[client.room]['saveDataThisRound'] = [];
 				}
 			  	// =========  save data to mongodb by loop END
@@ -737,15 +729,11 @@ io.on('connection', function (client) {
 
 	client.on('Data from Indiv', function (data) {
 		let now = new Date()
-        ,	logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
-    	, doneNum
-    	, timeElapsed = now - firstTrialStartingTime
-    	;
+        ,	logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'    	;
     	logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
     	console.log(logdate + ' - Client ' + client.session + ' (subNo = ' + client.subjectNumber + ') ended the task.');
 
     	for(let i=0; i<data.length; i++) {
-	  		const worker = createWorker('./worker_threads/savingBehaviouralData_indiv.js', data[i], client.session);
 	  	}
 	});
 
@@ -775,7 +763,6 @@ io.on('connection', function (client) {
 			  	// =========  save data to mongodb by loop
 			  	// if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] <= horizon) {
 			  	if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] % 10 == 0) { //if(roomStatus[client.room]['indivOrGroup'] != 0) {
-			  		const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  		roomStatus[client.room]['saveDataThisRound'] = [];
 
 				  	// for(let i=0; i<roomStatus[client.room]['saveDataThisRound'].length; i++) {
@@ -836,7 +823,6 @@ io.on('connection', function (client) {
 
 			if(roomStatus[thisRoomName]['indivOrGroup'] != 0) {
 				// =========  save data to mongodb by loop
-			  	const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 		  		roomStatus[client.room]['saveDataThisRound'] = [];
 		  		// =========  save data to mongodb by loop END
 				roomStatus[thisRoomName]['n']--;
@@ -850,7 +836,6 @@ io.on('connection', function (client) {
 				  	proceedRound(client);
 				}
 			} else { // if this is the individual condition
-				const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  	roomStatus[client.room]['saveDataThisRound'] = [];
 			}
 			// ======= remove this client from the room =====
@@ -897,11 +882,6 @@ io.on('connection', function (client) {
 // ==========================================
 // Functions
 // ==========================================
-function getRandomIntInclusive(max, min = 0) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //Both the maximum and minimum are inclusive 
-}
 
 // shuffling function
 function shuffle(array) {
@@ -924,18 +904,8 @@ function shuffle(array) {
 }
 
 
-function weightedRand2 (spec) {
-  var i, sum=0, r=Math.random();
-  for (i in spec) {
-    sum += spec[i];
-    if (r <= sum) return i;
-  }
-}
 //weightedRand2({0:prob_binary, 1:(1-prob_binary)});
 
-function rand(max, min = 0) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
 
 function proceedRound (client) {
 	roomStatus[client.room]['round']++;
@@ -993,6 +963,7 @@ function parameterEmitting (client) {
 	io.to(client.session).emit('this_is_your_parameters'
 		, { id: client.session
 			, room: client.room
+			, condition: client.condition
 			, maxChoiceStageTime: maxChoiceStageTime
 			, maxTimeTestScene: maxTimeTestScene
 			, exp_condition:roomStatus[client.room]['exp_condition']
@@ -1025,16 +996,7 @@ function stopAndResetClock (room) {
 
 
 // function generating a Gaussien random variable
-function BoxMuller(m, sigma) {
-    let a = 1 - Math.random();
-    let b = 1 - Math.random();
-    let c = Math.sqrt(-2 * Math.log(a));
-    if(0.5 - Math.random() > 0) {
-        return c * Math.sin(Math.PI * 2 * b) * sigma + m;
-    }else{
-        return c * Math.cos(Math.PI * 2 * b) * sigma + m;
-    }
-};
+;
 
 // a function to create an n-dimensional array
 function createArray(length) {
@@ -1058,7 +1020,7 @@ function createWorker(path, wd, id) {
 		console.error(err);
 	});
 
-	w.on('exit', (exitCode) => {
+	w.on('exit', () => {
 		let exitTime = new Date(),
 			exitlogtxt = '[' + exitTime.getUTCFullYear() + '/' + (exitTime.getUTCMonth() + 1) + '/';
 			exitlogtxt += exitTime.getUTCDate() + '/' + exitTime.getUTCHours() + ':' + exitTime.getUTCMinutes() + ':' + exitTime.getUTCSeconds() + ']';
