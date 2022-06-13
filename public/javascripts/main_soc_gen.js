@@ -297,7 +297,8 @@ window.onload = function() {
     socket.on('Proceed to next round', function(data) {
 
         currentTrial++;
-        totalEarning += payoff;
+        // totalEarning += payoff;
+        isChoiceMade = false; // reset isChoiceMade counter 
         $("#totalEarningInCent").val(Math.round((totalEarning*cent_per_point)));
         $("#totalEarningInUSD").val(Math.round((totalEarning*cent_per_point))/100);
         $("#currentTrial").val(currentTrial);

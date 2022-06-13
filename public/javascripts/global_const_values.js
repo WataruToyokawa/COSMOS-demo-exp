@@ -12,8 +12,10 @@ export const portnumQuestionnaire = 8000
 // ==== Basic parameters ====
 export const configWidth = 768 //800
 	, configHeight = 768 // 600
-	, fieldWidth = configWidth * 0.75
-	, fieldHeight = configHeight * 0.75
+	, field_x_floor = 16 // the x-axis pixcel where the grid starts
+	, field_y_floor = 50 // the y-axis picxel where the grid starts
+	, fieldWidth = configWidth * 0.75 
+	, fieldHeight = configHeight * 0.75 
 	, num_cell = 4
 	, cell_size_x = fieldWidth / num_cell
 	, cell_size_y = fieldHeight / num_cell

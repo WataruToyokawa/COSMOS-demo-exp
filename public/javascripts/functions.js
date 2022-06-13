@@ -8,6 +8,8 @@ import {maxLatencyForGroupCondition
 	, COLOR_PRIMARY_TEXTBOX
 	, COLOR_LIGHT_TEXTBOX
 	, COLOR_DARK_TEXTBOX
+	, field_x_floor
+	, field_y_floor
 } from './global_const_values.js';
 
 /* ========================================
@@ -137,6 +139,8 @@ export function wake_main_stage_up (game, indivOrGroup = 0) {
 	needATimer = true;
 	needAFeedback = true;
 	if (indivOrGroup == 0) {
+		game.scene.keys.SceneDemoIndiv.energyContainer.visible = true;
+		game.scene.keys.SceneDemoIndiv.energyBar.visible = true;
 		game.scene.keys.SceneDemoIndiv.player.visible = true;
 		game.scene.keys.SceneDemoIndiv.player.setInteractive();
 		for (let i = 1; i < num_cell+1; i++) {
@@ -145,6 +149,8 @@ export function wake_main_stage_up (game, indivOrGroup = 0) {
 			}
 		}
 	} else {
+		game.scene.keys.SceneDemoGroup.energyContainer.visible = true;
+		game.scene.keys.SceneDemoGroup.energyBar.visible = true;
 		game.scene.keys.SceneDemoGroup.isSceneDemoGroupActive = true;
 		game.scene.keys.SceneDemoGroup.player.visible = true;
 		game.scene.keys.SceneDemoGroup.player.setInteractive();
@@ -194,15 +200,18 @@ export function countdownBarStarts (this_game, maxChoiceStageTime) {
 			let stepWidth = this_game.energyMask.displayWidth / (maxChoiceStageTime/1000);
 			// moving the mask
 			this_game.energyMask.x -= stepWidth;
-			if (this_game.timeLeft < 1) {
-				// By setting "isChoiceMade" a bit earlier than
-				// the time is actually up, the two conflicting inputs, 
-				// a "miss" and an "actual choice" won't be executed at the same time
-				isChoiceMade = true;
-			}
-			// 
-			if(this_game.timeLeft < 0){
-				play_arm(Math.ceil(this_game.player.x/cell_size_x), Math.ceil(this_game.player.y/cell_size_y), num_cell, optionOrder, this_game); 
+				// if (this_game.timeLeft < 0.5) {
+				// 	// By setting "isChoiceMade" a bit earlier than
+				// 	// the time is actually up, the two conflicting inputs, 
+				// 	// a "miss" and an "actual choice" won't be executed at the same time
+					
+				// }
+				// 
+			if (this_game.timeLeft < 0) {
+				if (!isChoiceMade) {
+					isChoiceMade = true;
+					play_arm(Math.ceil((this_game.player.x - field_x_floor)/cell_size_x), Math.ceil((this_game.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this_game); 
+				}
 				// game.scene.start('ScenePayoffFeedback', {didMiss: true, flag: currentChoiceFlag});
 				// this_game.gameTimer.destroy();
 			}

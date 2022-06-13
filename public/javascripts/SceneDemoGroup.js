@@ -16,12 +16,15 @@ import {fieldHeight
 	, cell_size_x
 	, cell_size_y
 	, num_cell
+	, field_x_floor
+	, field_y_floor
 } from './global_const_values.js';
 
 import {emit_move_avatar
 	, play_arm
 	, countdownBarStarts
 	, getRandomIntInclusive
+	, sum
 } from './functions.js';
 
 // debug test environment
@@ -40,7 +43,7 @@ class SceneDemoGroup extends Phaser.Scene {
 		// this.add.image(0, 0, 'fishhook_background').setOrigin(0, 0).setScale(0.75); // .setOrigin(1, 1) if u want rigt-btm
 
 		// --- history window ---
-		let historyText = this.add.text(16, fieldHeight + 16, 'You are in zone ???', { fontSize: '25px', fill: '#000' });
+		let historyText = this.add.text(field_x_floor, fieldHeight + field_y_floor + 16, 'Total Score: 0', { fontSize: '25px', fill: '#000' });
 		this.historyText = historyText;
 
 		// --- monitoring the activity of this stage ---
@@ -54,7 +57,7 @@ class SceneDemoGroup extends Phaser.Scene {
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
 				// this.add.image(0, 0, 'Loewenbraeu_Logo.svg').setOrigin(0, 0).setScale(0.75);
-				this.options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x, (j-1/2)*cell_size_y, cell_size_x, cell_size_y);
+				this.options['box'+i+j] = this.add.rectangle((i-1/2)*cell_size_x + field_x_floor, (j-1/2)*cell_size_y + field_y_floor, cell_size_x, cell_size_y);
 				this.options['box'+i+j].setStrokeStyle(6, 0x1a65ac).setInteractive();
 				// function
 				this.options['box'+i+j].on('pointerover', function (pointer) {
@@ -63,30 +66,29 @@ class SceneDemoGroup extends Phaser.Scene {
 						Past rewards should be stored as a list
 						Once such a list is ready, I should rewrite the following i and j
 					=======================================================================*/
-					// this.historyText.setText('You are in zone ' + i + j);
-					this.historyText.setText( 'You are in zone ' + (i + num_cell * (j-1)) );
-					this.scene.launch('SceneDebugPopup', {x: pointer.x, y:pointer.y});
+					// this.historyText.setText( 'You are in zone ' + (i + num_cell * (j-1)) );
+					if(!isChoiceMade) this.scene.launch('SceneDebugPopup', {x: pointer.x - field_x_floor, y:pointer.y - field_y_floor});
 				}, this);
 			}
 		}
 
 		// --- Main player's objects ---
 		let total_num_cell = num_cell * num_cell
-		,	player_initial_potition = getRandomIntInclusive(total_num_cell, 1)
-		,	player_initial_x = (player_initial_potition % num_cell) * cell_size_x + cell_size_x/2
-		,	player_initial_y = Math.floor(player_initial_potition / num_cell) * cell_size_y + cell_size_y/2
+		,	player_initial_potition = getRandomIntInclusive(total_num_cell - 1, 1)
+		,	player_initial_x = (player_initial_potition % num_cell) * cell_size_x + cell_size_x/2 + field_x_floor
+		,	player_initial_y = Math.floor(player_initial_potition / num_cell) * cell_size_y + cell_size_y/2 + field_y_floor
 		;
 		let player = this.physics.add.sprite(player_initial_x, player_initial_y, 'self_1');
 		let target = new Phaser.Math.Vector2();
 		this.target = target;
 		this.player = player;
-		this.player.play('hovering-self').setInteractive({ cursor: 'pointer' });
+		// this.player.play('hovering-self').setInteractive({ cursor: 'pointer' });
+		this.player.play('hovering-self');
 		this.player.setScale(0.7);
 
 		// --- Countdown timer ---
 		// =============== A looking-good timer =================================
-		let energyContainer = this.add.sprite(100, fieldHeight + 60, 'energycontainer'); // the energy container. 
-		this.energyContainer = energyContainer
+		this.energyContainer = this.add.sprite(100, fieldHeight + field_y_floor + 60, 'energycontainer'); // the energy container. 
 		this.energyBar = this.add.sprite(this.energyContainer.x + 46, this.energyContainer.y, 'energybar'); // the energy bar. 
 		// a copy of the energy bar to be used as a mask. Another simple sprite but...
 		this.energyMask = this.add.sprite(this.energyBar.x, this.energyBar.y, 'energybar');
@@ -113,56 +115,52 @@ class SceneDemoGroup extends Phaser.Scene {
 		// --- What happens when click events fire ------
 		this.input.on('pointerdown', function (pointer) {
 
-			if (this.isSceneDemoGroupActive) {
+			if (this.isSceneDemoGroupActive & !isChoiceMade) {
 
-				if (pointer.x > 0 & pointer.x < fieldWidth) {
-					this.target.x = Math.floor( pointer.x / cell_size_x) * cell_size_x + cell_size_x / 2
-				} else if (pointer.x <= 0) {
-					this.target.x = cell_size_x / 2
+				if (pointer.x > field_x_floor & pointer.x < fieldWidth + field_x_floor) {
+					this.target.x = Math.floor( (pointer.x - field_x_floor) / cell_size_x) * cell_size_x + cell_size_x / 2 + field_x_floor
+				} else if (pointer.x <= field_x_floor) {
+					this.target.x = cell_size_x / 2 + field_x_floor
 				} else {
-					this.target.x = Math.floor( fieldWidth / cell_size_x) * cell_size_x - cell_size_x / 2
+					this.target.x = Math.floor( fieldWidth / cell_size_x) * cell_size_x - cell_size_x / 2 + field_x_floor
 				}
 
-				if (pointer.y > 0 & pointer.y < fieldHeight) {
-					this.target.y = Math.floor( pointer.y / cell_size_y) * cell_size_y + cell_size_y / 2
-				} else if (pointer.y <= 0) {
-					this.target.y = cell_size_y / 2
+				if (pointer.y > field_y_floor & pointer.y < fieldHeight + field_y_floor) {
+					this.target.y = Math.floor( (pointer.y - field_y_floor) / cell_size_y) * cell_size_y + cell_size_y / 2 + field_y_floor
+				} else if (pointer.y <= field_y_floor) {
+					this.target.y = cell_size_y / 2 + field_y_floor
 				} else {
-					this.target.y = Math.floor( fieldHeight / cell_size_y) * cell_size_y - cell_size_y / 2
+					this.target.y = Math.floor( fieldHeight / cell_size_y) * cell_size_y - cell_size_y / 2 + field_y_floor
 				}
 
 				// Move at 200 px/s:
 				this.physics.moveToObject(this.player, this.target, 400);
-
-				// this.debug.clear().lineStyle(1, 0x00ff00);
-				// this.debug.lineBetween(0, this.target.y, configHeight, this.target.y);
-				// this.debug.lineBetween(this.target.x, 0, this.target.x, configWidth);
 
 				emit_move_avatar(this.target.x, this.target.y);
 			}
 
 		}, this);
 
-		// --- What happens when the player click the dude ----
-		this.player.on('pointerover', function (pointer) {
-			this.player.setTint(0x4c4c4c); //B8860B ff0000
-		}, this);
-		this.player.on('pointerout', function (pointer) {
-			this.player.clearTint();
-		}, this);
-		this.player.on('pointerdown', function (pointer) {
-			if(!isChoiceMade) {
-				isChoiceMade = true;
-				play_arm(Math.ceil(this.player.x/cell_size_x), Math.ceil(this.player.y/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
-			}
-		}, this);
+		// // --- What happens when the player click the dude ----
+		// this.player.on('pointerover', function (pointer) {
+		// 	this.player.setTint(0x4c4c4c); //B8860B ff0000
+		// }, this);
+		// this.player.on('pointerout', function (pointer) {
+		// 	this.player.clearTint();
+		// }, this);
+		// this.player.on('pointerdown', function (pointer) {
+		// 	if(!isChoiceMade) {
+		// 		isChoiceMade = true;
+		// 		play_arm(Math.ceil(this.player.x/cell_size_x), Math.ceil(this.player.y/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
+		// 	}
+		// }, this);
 
 		// --- Other players' avatar ---
 		for (let i = 0; i < maxGroupSize; i++) {
 			let x_raw = Phaser.Math.Between(0, fieldWidth);
             let y_raw = Phaser.Math.Between(0, fieldHeight);
-            let x = Math.floor( x_raw / cell_size_x) * cell_size_x + cell_size_x / 2;
-            let y = Math.floor( y_raw / cell_size_y) * cell_size_y + cell_size_y / 2;
+            let x = Math.floor( x_raw / cell_size_x) * cell_size_x + cell_size_x / 2 + field_x_floor;
+            let y = Math.floor( y_raw / cell_size_y) * cell_size_y + cell_size_y / 2 + field_y_floor;
 			let other_player = this.physics.add.sprite(x, y, 'other_1');
 			let others_target = new Phaser.Math.Vector2(); // the direction of the avatar's movement
 			// this.others_target = others_target;
@@ -187,20 +185,24 @@ class SceneDemoGroup extends Phaser.Scene {
 		// --- The focal player's avatar ---
 		let distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.target.x, this.target.y);
 
+		// --- Score text
+		this.historyText.setText('Total score: ' + totalEarning );
+
 		if (this.player.body.speed > 0) {
 			//  4 is our distance tolerance, i.e. how close the player can get to the target
 			//  before it is considered as being there. The faster it moves, the more tolerance is required.
 			if (distance < 4)
 			{
 				this.player.body.reset(this.target.x, this.target.y);
+				play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
 			}
 			// The dude should not be clickable when moving
-			this.player.disableInteractive();
+			// this.player.disableInteractive();
 		}
-		else {
-			// The dude becomes clickable again when stops
-			this.player.setInteractive({ cursor: 'pointer' });
-		}
+		// else {
+		// 	// The dude becomes clickable again when stops
+		// 	this.player.setInteractive({ cursor: 'pointer' });
+		// }
 
 		// --- The other players' avatar ---
 		for (let i = 0; i < maxGroupSize; i++) {
