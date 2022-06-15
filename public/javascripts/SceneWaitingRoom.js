@@ -51,15 +51,15 @@ class SceneWaitingRoom extends Phaser.Scene {
 		waitingBar = this.add.graphics();
 		waitingBox.fillStyle(0x000000, 0.7); // color, alpha
 		waitingBox.fillRect(240, 270, 320, 50);
-		bonusBox = this.add.graphics();
-		bonusBar = this.add.graphics();
-		bonusBox.fillStyle(0x000000, 0.7); // color, alpha
-		bonusBox.fillRect(240, 380, 320, 50);
+		// bonusBox = this.add.graphics();
+		// bonusBar = this.add.graphics();
+		// bonusBox.fillStyle(0x000000, 0.7); // color, alpha
+		// bonusBox.fillRect(240, 380, 320, 50);
 		// countdown texts
 		countdownText = this.add.text(configWidth/2, 340, 'The study starts in ?? sec.' , textStyle);
 		countdownText.setOrigin(0.5, 0.5);
-		bonusText = this.add.text(configWidth/2, 450, 'Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.' , textStyle);
-		bonusText.setOrigin(0.5, 0.5);
+		// bonusText = this.add.text(configWidth/2, 450, 'Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.' , textStyle);
+		// bonusText.setOrigin(0.5, 0.5);
 
 	}
 
@@ -71,14 +71,14 @@ class SceneWaitingRoom extends Phaser.Scene {
 		////console.log( 0.9+(restTime/1000)*(1-waitingCountdown.getProgress()) );
 		////console.log(waitingCountdown.getProgress());
 		waitingBonus += 1.0/(6*this.game.loop.actualFps) //1 pence per 6 seconds = 6 pounds per hour
-		bonusBar.clear();
-		bonusBar.fillStyle(0xff5a00, 1);
-		if(waitingBonus*2<300) {
-	    	bonusBar.fillRect(250, 390, waitingBonus*2, 30); //1 pence per 6 seconds = 6 pounds per hour
-		}else{
-			bonusBar.fillRect(250, 390, 300, 30);
-		}
-		bonusText.setText('Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.');
+		// bonusBar.clear();
+		// bonusBar.fillStyle(0xff5a00, 1);
+		// if(waitingBonus*2<300) {
+	    // 	// bonusBar.fillRect(250, 390, waitingBonus*2, 30); //1 pence per 6 seconds = 6 pounds per hour
+		// }else{
+		// 	// bonusBar.fillRect(250, 390, 300, 30);
+		// }
+		// // bonusText.setText('Your waiting bonus: '+waitingBonus.toString().substr(0, 2)+' pence.');
 	}
 };
 

@@ -28,7 +28,7 @@ router.get('/', function(req, res, next) {
 	if(typeof req.query.amazonID != 'undefined' & typeof req.query.condition != 'undefined') {
 		res.render('game', {
 			title: 'Online experiment',
-			condition: req.query.condition,
+			condition: req.query.condition, // group or competitive 
 			amazonID: req.query.amazonID //'INHOUSETEST3' //INHOUSETEST3
 		});
 	} else {

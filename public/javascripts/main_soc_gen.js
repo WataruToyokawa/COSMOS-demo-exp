@@ -32,10 +32,10 @@ import SceneResult from './SceneResult.js';
 
 // ===== Functions and const values =============================
 import {configWidth
-    , fieldHeight
-    , fieldWidth
     , cell_size_x
     , cell_size_y
+    , field_x_floor
+    , field_y_floor
     , num_cell
     , configHeight
     , portnumQuestionnaire
@@ -44,17 +44,10 @@ import {configWidth
     , exceptions
 } from './global_const_values.js';
 
-import {rand
-	, isNotNegative
-	, BoxMuller
-	, sum
-	, waitingBarCompleted
-	, sending_core_is_ready
-	, goToQuestionnaire
-	, settingConfirmationID
-	// , testFunction
-    , move_other_player
+import {settingConfirmationID
     , wake_main_stage_up
+    , shuffleArray
+    , play_arm_competitive
 } from './functions.js';
 
 const myData = [];
@@ -259,6 +252,23 @@ window.onload = function() {
         waitingRoomFinishedFlag = 1;
         game.scene.sleep('SceneWaitingRoom');
 
+        // Making a unique jitter position assigned to each subject
+        let position_size = Math.ceil(Math.sqrt(currentGroupSize))
+        let x_unit = (cell_size_x * 2/3) / (position_size + 2)
+        let y_unit = (cell_size_y * 2/3) / (position_size + 2)
+        for (let i = 0; i < position_size + 2; i++) {
+            for (let j = 0; j < position_size + 2; j++) {
+                if (!(i > position_size/2 - 2 & i < position_size/2 + 2 & j > position_size/2 - 2 & j < position_size/2 + 2)) {
+                    jitter_position_array.push({x: i * x_unit, y: j * y_unit})
+                }
+                if (i == position_size + 1 & j == position_size + 1) {
+                    shuffleArray(jitter_position_array)
+                }
+            }
+        }
+        // console.log(jitter_position_array.length + ' and group size = ' + currentGroupSize)
+        // console.log(jitter_position_array)
+
         // For the debug,
         if (indivOrGroup == 0) {
             game.scene.start('SceneDemoIndiv');
@@ -274,6 +284,39 @@ window.onload = function() {
     	//console.log('receive: "you guys are individual condition"');
         socket.emit('ok individual condition sounds good');
     });
+
+    socket.on('a_competitive_trial_completed', function () {
+        let my_box_x = Math.ceil((game.scene.keys.SceneDemoGroup.player.x - field_x_floor)/cell_size_x)
+        let my_box_y = Math.ceil((game.scene.keys.SceneDemoGroup.player.y - field_y_floor)/cell_size_y)
+        let my_option = (my_box_x + num_cell * (my_box_y-1));
+        play_arm_competitive(my_box_x
+            , my_box_y
+            , num_cell
+            , optionOrder
+            , game.scene.keys.SceneDemoGroup
+            , currentTrial
+            , condition
+            , game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1]
+        ); 
+        currentTrial++;
+        // totalEarning += payoff;
+        isChoiceMade = false; // reset isChoiceMade counter 
+        $("#totalEarningInCent").val(Math.round((totalEarning*cent_per_point)));
+        $("#totalEarningInUSD").val(Math.round((totalEarning*cent_per_point))/100);
+        $("#currentTrial").val(currentTrial);
+        $("#exp_condition").val(exp_condition);
+        //$("#confirmationID").val(confirmationID);
+        $("#bonus_for_waiting").val(Math.round(waitingBonus));
+        // payoffText.destroy();
+        // waitOthersText.destroy();
+        // for (let i =1; i<numOptions+1; i++) {
+        // 	objects_feedbackStage['box'+i].destroy();
+        // }
+        setTimeout(function(){
+			wake_main_stage_up(game, indivOrGroup);
+		}, 1.0 * 1000);
+        // console.log('play_arm is fired with ' + game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1] )
+    })
 
     socket.on('all passed the test', function(data) {
         //console.log('testPassed reached ' + data.testPassed + ' conditoin: ' + data.exp_condition);
@@ -295,6 +338,8 @@ window.onload = function() {
     });
 
     socket.on('Proceed to next round', function(data) {
+
+        console.log('proceed to next round is called')
 
         currentTrial++;
         // totalEarning += payoff;
@@ -355,16 +400,17 @@ window.onload = function() {
     socket.on('avatar_position_update', function (data) {
         // console.log('Subject ' + data.subjectNumber + ' moves to x = ' + data.x + ' and y = ' + data.y);
         let new_target = new Phaser.Math.Vector2(); 
-        let x_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_x/3);
-        let y_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_y/3);
-        new_target.x = data.x + x_jitter;
-        new_target.y = data.y + y_jitter;
+        // let x_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_x/3);
+        // let y_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_y/3);
+        // new_target.x = data.x + x_jitter;
+        // new_target.y = data.y + y_jitter;
+        new_target.x = data.x - cell_size_x/3 + jitter_position_array[data.subjectNumber -1].x
+        new_target.y = data.y - cell_size_y/3 + jitter_position_array[data.subjectNumber -1].y
+        // console.log(data.x + ' and ' + data.y);
+        // console.log(new_target);
         others_target_array[data.subjectNumber - 1] = new_target;
         // Move at 200 px/s:
         game.scene.keys.SceneDemoGroup.physics.moveToObject(other_player_array[data.subjectNumber - 1], new_target, 700);
-        // if (subjectNumber != data.subjectNumber) {
-        //     other_player_array[data.subjectNumber - 1].visible = true; // if this is from other subject
-        // }
     });
 
     socket.on('show_chart', function (data) {
@@ -412,7 +458,7 @@ window.onload = function() {
                         max: num_cell * num_cell + 1,
                         title: {
                             display: true,
-                            text: 'The goodness of options you chose'
+                            text: 'Ranking of choices'
                         }
                     },
                     x : {

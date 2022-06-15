@@ -38,6 +38,7 @@ class SceneFeedback extends Phaser.Scene {
 		this.box_quality = data.box_quality;
 		this.x_pos = data.x * cell_size_x - cell_size_x/2 + field_x_floor;
 		this.y_pos = data.y * cell_size_y - cell_size_y/2 + field_y_floor;
+		this.isTimeout = data.isTimeout;
 	}
 
 	create(){
@@ -68,22 +69,30 @@ class SceneFeedback extends Phaser.Scene {
 		}
 
 		// this.add.text(this.x_pos, this.y_pos + 40, ''+this.payoff+' points!', { fontSize: '25px', fill: '#000' }).setOrigin(0.5, 0.5);
-		createTextBox(this, this.x_pos - 45, this.y_pos - 60, {
-			wrapWidth: 450,
-		}).start(''+this.payoff+' points!', 50);
-		
+		if(this.payoff > 0) {
+			createTextBox(this, this.x_pos - 45, this.y_pos - 60, {
+				wrapWidth: 450,
+			}).start(''+this.payoff+' points!', 50);
 
-		// Updating the choice history data
-		myChoices.push(this.box_quality);
-		myEarnings.push(this.payoff);
-		totalEarning += this.payoff;
+			// Updating the choice history data
+			myChoices.push(this.box_quality);
+			myEarnings.push(this.payoff);
+			totalEarning += this.payoff;
+		} else {
+			this.textWindow = createTextBox(this, this.x_pos - 45, this.y_pos - 60, {
+				wrapWidth: 450,
+			}).start('Wait others!', 50);
+		}
 	}
 
 	update(){
-		if (needAFeedback) {
+		if (needAFeedback & condition != 'competitive') {
 			needAFeedback = false;
-			emit_this_trial_is_done(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings);
-		}
+			emit_this_trial_is_done(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings, condition);
+		} 
+		// else if (this.isTimeout & condition == 'competitive') {
+		// 	update_done_n(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings, condition);
+		// }
 	}
 }
 

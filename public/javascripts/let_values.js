@@ -9,6 +9,7 @@ let isEnvironmentReady = false
 	, other_player_array = []
 	, other_player_visibility_array = []
 	, others_target_array = []
+	, jitter_position_array = []
 	, payoff
 	, payoffTransformed
 	, totalEarning = 0

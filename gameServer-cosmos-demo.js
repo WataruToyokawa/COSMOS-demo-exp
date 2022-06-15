@@ -34,9 +34,9 @@ const {Worker} = require('worker_threads');
 // Experimental variables
 const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
-, maxGroupSize = 60 //
+, maxGroupSize = 20 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 10*1000 //3*60*1000
+, maxWaitingTime = 15*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
@@ -86,7 +86,7 @@ const gameRouter = require('./routes/game'); // loading game.ejs from which amaz
 app.use('/', gameRouter);
 
 // error handling
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     console.error(err.stack)
     res.status(500).send('A technical issue happened in the server...😫')
 });
@@ -293,7 +293,7 @@ io.on('connection', function (client) {
 		    console.log(logtext_coreReady);
 		    // if(data.latency < data.maxLatencyForGroupCondition) {
 			console.log('client.condition = ' + client.condition)
-			if(client.condition == 'group') {
+			if(client.condition == 'group' | client.condition == 'competitive') {
 		    	// Let the client join the newest room
 			  	client.roomFindingCounter = 1; // default: roomStatus = {'finishedRoom', 'session_100'}
 			  	while (typeof client.room == 'undefined') {
@@ -315,7 +315,7 @@ io.on('connection', function (client) {
 				      client.newRoomName = makeid(7) + '_session_' + (sessionNo + Object.keys(roomStatus).length - 1);
 				      roomStatus[client.newRoomName] = 
 				      {
-				          exp_condition: '', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
+				          exp_condition: client.condition, //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
 				          // riskDistributionId: 20, //getRandomIntInclusive(max = 13, min = 13), // max = 2, min = 0
 				          // isLeftRisky: isLeftRisky_list[getRandomIntInclusive(max = 1, min = 0)],
 				          optionOrder: shuffle(options),
@@ -372,7 +372,7 @@ io.on('connection', function (client) {
 				// Let the client know the specific task's parameters
 				parameterEmitting(client);
 		    } else {
-		    	// else condition == individual
+		    	// else if client.condition == individual
 		      	// then this subject is go to the individual condition
 		      	// client.newRoomName = myMonth+myDate+myHour+myMin+'_largeLatency_' + (sessionNo + Object.keys(roomStatus).length - 1);
 				client.newRoomName = myMonth+myDate+myHour+myMin+'_indiv_' + (sessionNo + Object.keys(roomStatus).length - 1);
@@ -552,8 +552,84 @@ io.on('connection', function (client) {
 			roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] = data.box_quality;
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1][this_subject_temp - 1] = data.payoff;
 		}
+
+		// if(data.condition == 'competitive') proceedRound(client);
 		// console.log("roomStatus[client.room]['socialInfo'][this_round_temp - 1] = " + roomStatus[client.room]['socialInfo'][this_round_temp - 1])
     });
+
+	client.on('update_done_n', function(data) {
+		let now = new Date()
+        ,	logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
+    	;
+    	logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
+    	console.log(logdate + ' - Client ' + client.session + ' (subNo = ' + client.subjectNumber + ') chose ' + data.box_quality + ' at trial ' + data.this_trial_num + ' (payoff is not determined yet).');
+
+		// 
+		// There are two things happening here
+		// 1. Incrementing 'doneNo' and if it reached n, proceedRound() is called
+		
+        if(typeof client.subjectNumber != 'undefined') {
+			// Depending on the number of subject who has already done this round,
+			// the response to the client changes 
+			// (i.e., the next round only starts after all the subject at the moment have chosen their option)
+			if(typeof roomStatus[client.room]['doneNo'] != 'undefined') {
+				roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1]++;
+			}
+			let now_endFeedback = new Date()
+	        ,	logdate_endFeedback = '[' + now_endFeedback.getUTCFullYear() + '/' + (now_endFeedback.getUTCMonth() + 1) + '/'
+	    	;
+	    	logdate_endFeedback += now_endFeedback.getUTCDate() + '/' + now_endFeedback.getUTCHours() + ':' + now_endFeedback.getUTCMinutes() + ':' + now_endFeedback.getUTCSeconds() + ']';
+	    	logdate_endFeedback += ` - doneNo: ${roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1]}, current round is ${roomStatus[client.room]['round']} at ${client.room} in the competitive condition`;
+			console.log(logdate_endFeedback);
+
+			// If all the client in this room has made their choice, let's move on
+			if (roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1] >= roomStatus[client.room]['n']) {
+				let now_endResultStage = new Date()
+		        ,	logdate_endResultStage = '[' + now_endResultStage.getUTCFullYear() + '/' + (now_endResultStage.getUTCMonth() + 1) + '/'
+		    	;
+	    		logdate_endResultStage += now_endResultStage.getUTCDate() + '/' + now_endResultStage.getUTCHours() + ':' + now_endResultStage.getUTCMinutes() + ':' + now_endResultStage.getUTCSeconds() + ']';
+			  	console.log(logdate_endResultStage + ` - result stage ended at: ${client.room}`);
+				roomStatus[client.room]['round']++;
+				if(roomStatus[client.room]['round'] <= horizon) {
+					io.to(client.room).emit('a_competitive_trial_completed');
+				} else {
+					io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
+				}
+			}
+		}
+
+	});
+
+	// client.on('choice_is_made_in_competitive_cond', function() {
+	// 	// 
+	// 	// There are two things happening here
+	// 	// 1. Incrementing 'doneNo' and if it reached n, proceedRound() is called
+		
+    //     if(typeof client.subjectNumber != 'undefined') {
+	// 		// Depending on the number of subject who has already done this round,
+	// 		// the response to the client changes 
+	// 		// (i.e., the next round only starts after all the subject at the moment have chosen their option)
+	// 		if(typeof roomStatus[client.room]['doneNo'] != 'undefined') {
+	// 			roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1]++;
+	// 		}
+	// 		let now_endFeedback = new Date()
+	//         ,	logdate_endFeedback = '[' + now_endFeedback.getUTCFullYear() + '/' + (now_endFeedback.getUTCMonth() + 1) + '/'
+	//     	;
+	//     	logdate_endFeedback += now_endFeedback.getUTCDate() + '/' + now_endFeedback.getUTCHours() + ':' + now_endFeedback.getUTCMinutes() + ':' + now_endFeedback.getUTCSeconds() + ']';
+	//     	logdate_endFeedback += ` - doneNo: ${roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1]}, current round is ${roomStatus[client.room]['round']} at ${client.room} in the competitive condition`;
+	// 		console.log(logdate_endFeedback);
+
+	// 		// If all the client in this room has made their choice, let's move on
+	// 		if (roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1] >= roomStatus[client.room]['n']) {
+	// 			let now_endResultStage = new Date()
+	// 	        ,	logdate_endResultStage = '[' + now_endResultStage.getUTCFullYear() + '/' + (now_endResultStage.getUTCMonth() + 1) + '/'
+	// 	    	;
+	//     		logdate_endResultStage += now_endResultStage.getUTCDate() + '/' + now_endResultStage.getUTCHours() + ':' + now_endResultStage.getUTCMinutes() + ':' + now_endResultStage.getUTCSeconds() + ']';
+	// 		  	console.log(logdate_endResultStage + ` - result stage ended at: ${client.room}`);
+	// 		  	io.to(client.room).emit('a_competitive_trial_completed');
+	// 		}
+	// 	}
+    // });
 
     client.on('this_trial_is_done', function() {
 		// 
@@ -660,72 +736,6 @@ io.on('connection', function (client) {
 		}
 	});
 
-	client.on('choice made 4ab', function (data) {
-		let now = new Date()
-        ,	logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
-    	, doneNum
-    	, timeElapsed = now - firstTrialStartingTime
-    	;
-    	logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
-    	console.log(logdate + ' - Client ' + client.session + ' (subNo = ' + client.subjectNumber + ') chose ' + data.choice + ' and got ' + data.payoff + ' at trial ' + data.thisTrial + '.');
-    	// update roomStatus
-    	// if (typeof roomStatus[client.room] != 'undefined') {
-    	if (typeof roomStatus[client.room] != 'undefined' & typeof client.subjectNumber != 'undefined') {
-	    	roomStatus[client.room]['doneId'][roomStatus[client.room]['round']-1].push(client.subjectNumber);
-			doneNum = roomStatus[client.room]['doneId'][roomStatus[client.room]['round']-1].length;
-			roomStatus[client.room]['socialInfo'][roomStatus[client.room]['round']-1][doneNum-1] = data.choice;
-			roomStatus[client.room]['publicInfo'][roomStatus[client.room]['round']-1][doneNum-1] = data.payoff;
-			roomStatus[client.room]['choiceOrder'][roomStatus[client.room]['round']-1][doneNum-1] = client.subjectNumber;
-			if( roomStatus[client.room]['round'] < horizon ) {
-				if (doneNum <= 1) {
-					// summarise social information
-					for (let i = 0; i < numOptions; i++) {
-						roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']][i] = 0;
-					}
-				}
-				// roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']][data.chosenOptionFlag-1]++;
-				roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']][data.num_choice]++;
-				//console.log(roomStatus[client.room]);
-				// if (data.choice === 'sure') {
-				// 	roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']][0]++;
-				// } else if (data.choice === 'risky') {
-				// 	roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']][1]++;
-				// }
-			}
-			//client.emit('your instant number is ', client.subjectNumber-1);
-			io.to(client.room).emit('these are done subjects', {doneSubject:roomStatus[client.room]['doneId'][roomStatus[client.room]['round']-1]});
-
-			// =========  save data to mongodb
-			roomStatus[client.room]['saveDataThisRound'].push(
-				{	date: now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) +'-' + now.getUTCDate()
-				,	time: now.getUTCHours()+':'+now.getUTCMinutes()+':'+now.getUTCSeconds()
-				,	exp_condition: roomStatus[client.room]['exp_condition']
-				// ,	isLeftRisky: roomStatus[client.room]['isLeftRisky']
-				,	indivOrGroup: roomStatus[client.room]['indivOrGroup']
-				,	groupSize: roomStatus[client.room]['n']
-				,	room: client.room
-				,	confirmationID: client.session
-				,	subjectNumber: client.subjectNumber
-				,	amazonID: client.amazonID
-				,	round: roomStatus[client.room]['round']
-				,	chosenOptionFlag: data.chosenOptionFlag
-				,	choice: data.choice
-				,	payoff: data.payoff
-				,	totalEarning: data.totalEarning
-				,	behaviouralType: 'choice'
-				,	timeElapsed: timeElapsed
-				,	latency: client.latency
-				,	socialFreq: roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']-1]
-				,	socialInfo: data.socialInfo
-				,	publicInfo: data.publicInfo
-				,	maxGroupSize: maxGroupSize
-				,	riskDistributionId: data.riskDistributionId
-				,	optionOrder: roomStatus[client.room]['optionOrder']
-				}
-			);
-			// =========  save data to mongodb
-		}
-	});
 
 	client.on('Data from Indiv', function (data) {
 		let now = new Date()

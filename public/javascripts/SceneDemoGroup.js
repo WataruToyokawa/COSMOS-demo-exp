@@ -24,10 +24,9 @@ import {emit_move_avatar
 	, play_arm
 	, countdownBarStarts
 	, getRandomIntInclusive
-	, sum
+	, update_done_n
 } from './functions.js';
 
-// debug test environment
 class SceneDemoGroup extends Phaser.Scene {
 
 	constructor (){
@@ -176,6 +175,10 @@ class SceneDemoGroup extends Phaser.Scene {
 			other_player_array[i].visible = other_player_visibility_array[i]; // others are invisible before they make their 1st choice	
 		}
 
+		// --- Tracking the social frequency at the current state (real time update) ---
+		let social_frequency = new Array(num_cell*num_cell).fill(1);
+		this.social_frequency = social_frequency
+
 	}
 
 	update(){
@@ -196,7 +199,24 @@ class SceneDemoGroup extends Phaser.Scene {
 			if (distance < 4)
 			{
 				this.player.body.reset(this.target.x, this.target.y);
-				play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
+				let my_box_x = Math.ceil((this.player.x - field_x_floor)/cell_size_x)
+				let my_box_y = Math.ceil((this.player.y - field_y_floor)/cell_size_y)
+				let my_option = (my_box_x + num_cell * (my_box_y-1));
+				if (condition != 'competitive' & !isChoiceMade) {
+					isChoiceMade = true;
+					play_arm(my_box_x
+						, my_box_y
+						, num_cell
+						, optionOrder
+						, this
+						, currentTrial
+						, condition
+						, this.social_frequency[my_option - 1]
+					); // "this" allows function.js to know where the game exists
+				} else {
+					isChoiceMade = true;
+					update_done_n(my_box_x, my_box_y, num_cell, optionOrder, this, currentTrial)
+				}
 			}
 			// The dude should not be clickable when moving
 			// this.player.disableInteractive();
@@ -220,6 +240,12 @@ class SceneDemoGroup extends Phaser.Scene {
 					// let x_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_x/3);
 					// let y_jitter = Phaser.Math.Between(-cell_size_x/3, cell_size_y/3);
 					other_player_array[i].body.reset(others_target_array[i].x, others_target_array[i].y);
+					if (i != subjectNumber - 1) {
+						let box_x = Math.ceil((others_target_array[i].x - field_x_floor)/cell_size_x);
+						let box_y = Math.ceil((others_target_array[i].y - field_y_floor)/cell_size_y);
+						let option = (box_x + num_cell * (box_y-1));
+						this.social_frequency[option - 1]++;
+					}
 					if (other_player_array[i].visible == false && subjectNumber != i + 1) {
 						other_player_visibility_array[i] = true;
 						if (this.isSceneDemoGroupActive == true) {
