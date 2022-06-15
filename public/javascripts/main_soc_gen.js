@@ -409,7 +409,17 @@ window.onload = function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: num_cell * num_cell + 1
+                        max: num_cell * num_cell + 1,
+                        title: {
+                            display: true,
+                            text: 'The goodness of options you chose'
+                        }
+                    },
+                    x : {
+                        title: {
+                            display: true,
+                            text: 'Trial'
+                        }
                     }
                 },
                 plugins: {

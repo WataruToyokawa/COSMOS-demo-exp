@@ -2,6 +2,7 @@
 
 import {configWidth
 	, configHeight
+	, field_x_floor
 } from './global_const_values.js';
 
 // import {wake_main_stage_up
@@ -26,12 +27,14 @@ class SceneResult extends Phaser.Scene {
 	}
 
 	create(){
+		// --- resize the canvas element ---
+		this.scale.resize(configWidth, configHeight/6);
 		// --- background colour ---
 		this.cameras.main.setBackgroundColor(0xffffff); //#FFFFFF == 'white'
 
-		this.resultText = this.add.text(configWidth/2, configHeight/2, 'Result 👇', { fontSize: '30px', fill: '#000'});
+		this.resultText = this.add.text(field_x_floor, configHeight/2/6, 'Well done! Look at the result 👇', { fontSize: '30px', fill: '#000'});
 
-		console.log('myChoices = ' + myChoices)
+		// console.log('myChoices = ' + myChoices)
 		
 	}
 

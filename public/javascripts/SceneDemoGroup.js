@@ -43,7 +43,8 @@ class SceneDemoGroup extends Phaser.Scene {
 		// this.add.image(0, 0, 'fishhook_background').setOrigin(0, 0).setScale(0.75); // .setOrigin(1, 1) if u want rigt-btm
 
 		// --- history window ---
-		let historyText = this.add.text(field_x_floor, fieldHeight + field_y_floor + 16, 'Total Score: 0', { fontSize: '25px', fill: '#000' });
+		// let historyText = this.add.text(field_x_floor, fieldHeight + field_y_floor + 16, 'Total Score: 0', { fontSize: '25px', fill: '#000' });
+		let historyText = this.add.text(field_x_floor, fieldHeight + field_y_floor + 16, 'Remaining clicks: ' + (horizon + 1 - currentTrial), { fontSize: '25px', fill: '#000' });
 		this.historyText = historyText;
 
 		// --- monitoring the activity of this stage ---
@@ -186,7 +187,8 @@ class SceneDemoGroup extends Phaser.Scene {
 		let distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.target.x, this.target.y);
 
 		// --- Score text
-		this.historyText.setText('Total score: ' + totalEarning );
+		// this.historyText.setText('Total score: ' + totalEarning );
+		this.historyText.setText('Remaining clicks: ' + (horizon + 1 - currentTrial));
 
 		if (this.player.body.speed > 0) {
 			//  4 is our distance tolerance, i.e. how close the player can get to the target
