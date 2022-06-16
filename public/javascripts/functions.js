@@ -297,7 +297,7 @@ export function emit_this_trial_is_done (this_game, indivOrGroup, currentTrial, 
 			// 	// go_to_summary_page(this_game, myChoices, myEarnings);
 			// 	socket.emit('go_to_summary_page', {myChoices:myChoices, myEarnings:myEarnings});
 			// }
-		}, 1.0 * 1000); // 2.5s was the original
+		}, 1.3 * 1000); // 2.5s was the original
 	} 
 	// else {
 	// 	// socket.emit('choice_is_made_in_competitive_cond');

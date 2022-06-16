@@ -314,7 +314,7 @@ window.onload = function() {
         // }
         setTimeout(function(){
 			wake_main_stage_up(game, indivOrGroup);
-		}, 1.0 * 1000);
+		}, 1.8 * 1000);
         // console.log('play_arm is fired with ' + game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1] )
     })
 
