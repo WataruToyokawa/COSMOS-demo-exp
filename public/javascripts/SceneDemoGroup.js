@@ -199,11 +199,11 @@ class SceneDemoGroup extends Phaser.Scene {
 			if (distance < 4)
 			{
 				this.player.body.reset(this.target.x, this.target.y);
+				isChoiceMade = true;
 				let my_box_x = Math.ceil((this.player.x - field_x_floor)/cell_size_x)
 				let my_box_y = Math.ceil((this.player.y - field_y_floor)/cell_size_y)
 				let my_option = (my_box_x + num_cell * (my_box_y-1));
 				if (condition != 'competitive' & !isChoiceMade) {
-					isChoiceMade = true;
 					play_arm(my_box_x
 						, my_box_y
 						, num_cell
@@ -214,17 +214,34 @@ class SceneDemoGroup extends Phaser.Scene {
 						, this.social_frequency[my_option - 1]
 					); // "this" allows function.js to know where the game exists
 				} else {
-					isChoiceMade = true;
 					update_done_n(my_box_x, my_box_y, num_cell, optionOrder, this, currentTrial)
 				}
 			}
 			// The dude should not be clickable when moving
 			// this.player.disableInteractive();
 		}
-		// else {
-		// 	// The dude becomes clickable again when stops
-		// 	this.player.setInteractive({ cursor: 'pointer' });
-		// }
+
+		// avoid the player from flying away 
+		if (this.player.x < field_x_floor | this.player.x > field_x_floor + fieldWidth | this.player.y < field_y_floor | this.player.y > field_y_floor + fieldHeight) {
+			isChoiceMade = true;
+			this.player.body.reset(this.target.x, this.target.y);
+			let my_box_x = Math.ceil((this.player.x - field_x_floor)/cell_size_x)
+			let my_box_y = Math.ceil((this.player.y - field_y_floor)/cell_size_y)
+			let my_option = (my_box_x + num_cell * (my_box_y-1));
+			if (condition != 'competitive' & !isChoiceMade) {
+				play_arm(my_box_x
+					, my_box_y
+					, num_cell
+					, optionOrder
+					, this
+					, currentTrial
+					, condition
+					, this.social_frequency[my_option - 1]
+				); // "this" allows function.js to know where the game exists
+			} else {
+				update_done_n(my_box_x, my_box_y, num_cell, optionOrder, this, currentTrial)
+			}
+		}
 
 		// --- The other players' avatar ---
 		for (let i = 0; i < maxGroupSize; i++) {

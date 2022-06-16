@@ -119,7 +119,6 @@ class SceneDemoIndiv extends Phaser.Scene {
 				}
 
 				// Move at 200 px/s:
-				isChoiceMade = true;
 				this.physics.moveToObject(this.player, this.target, 400);
 				// emit_move_avatar(this.target.x, this.target.y); // Indiv condition doesn't have to share it with server
 			}
@@ -157,17 +156,19 @@ class SceneDemoIndiv extends Phaser.Scene {
 			//  before it is considered as being there. The faster it moves, the more tolerance is required.
 			if (distance < 4)
 			{
+				isChoiceMade = true;
 				this.player.body.reset(this.target.x, this.target.y);
 				play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
 			}
 
 		}
-			// The dude should not be clickable when moving
-			// this.player.disableInteractive();
-		// else {
-		// 	// The dude becomes clickable again when stops
-		// 	this.player.setInteractive({ cursor: 'pointer' });
-		// }
+		
+		// avoid the player from flying away 
+		if (this.player.x < field_x_floor | this.player.x > field_x_floor + fieldWidth | this.player.y < field_y_floor | this.player.y > field_y_floor + fieldHeight) {
+			isChoiceMade = true;
+			this.player.body.reset(this.target.x, this.target.y);
+			play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
+		}
 	}
 };
 

@@ -338,7 +338,7 @@ export function countdownBarStarts (this_game, maxChoiceStageTime) {
 							, this_game
 							, currentTrial
 							, condition
-							, this_game.social_frequency[my_option - 1]
+							, 1 // social frequency == 1 when it's not competitive condition
 							, true // isTimeout
 						); 
 					} 
