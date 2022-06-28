@@ -199,7 +199,6 @@ class SceneDemoGroup extends Phaser.Scene {
 			if (distance < 4)
 			{
 				this.player.body.reset(this.target.x, this.target.y);
-				isChoiceMade = true;
 				let my_box_x = Math.ceil((this.player.x - field_x_floor)/cell_size_x)
 				let my_box_y = Math.ceil((this.player.y - field_y_floor)/cell_size_y)
 				let my_option = (my_box_x + num_cell * (my_box_y-1));
@@ -213,8 +212,10 @@ class SceneDemoGroup extends Phaser.Scene {
 						, condition
 						, this.social_frequency[my_option - 1]
 					); // "this" allows function.js to know where the game exists
+					isChoiceMade = true;
 				} else {
 					update_done_n(my_box_x, my_box_y, num_cell, optionOrder, this, currentTrial)
+					isChoiceMade = true;
 				}
 			}
 			// The dude should not be clickable when moving
@@ -223,7 +224,6 @@ class SceneDemoGroup extends Phaser.Scene {
 
 		// avoid the player from flying away 
 		if (this.player.x < field_x_floor | this.player.x > field_x_floor + fieldWidth | this.player.y < field_y_floor | this.player.y > field_y_floor + fieldHeight) {
-			isChoiceMade = true;
 			this.player.body.reset(this.target.x, this.target.y);
 			let my_box_x = Math.ceil((this.player.x - field_x_floor)/cell_size_x)
 			let my_box_y = Math.ceil((this.player.y - field_y_floor)/cell_size_y)
@@ -238,8 +238,10 @@ class SceneDemoGroup extends Phaser.Scene {
 					, condition
 					, this.social_frequency[my_option - 1]
 				); // "this" allows function.js to know where the game exists
+				isChoiceMade = true;
 			} else {
 				update_done_n(my_box_x, my_box_y, num_cell, optionOrder, this, currentTrial)
+				isChoiceMade = true;
 			}
 		}
 

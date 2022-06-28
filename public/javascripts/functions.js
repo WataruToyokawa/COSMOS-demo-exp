@@ -168,6 +168,12 @@ export function play_arm_competitive (x, y, num_cell, optionOrder, this_game, th
 		, condition: condition
 		}); 
 	
+	if(currentTrial >= horizon) {
+		setTimeout(function(){
+			socket.emit('completed all trial in the competitive task')
+		}, 1.3 * 1000);
+	}
+	
 	// // if itTimeout is true, make everything invisible
 	// if(isTimeout) {
 	// 	this_game.player.removeInteractive();

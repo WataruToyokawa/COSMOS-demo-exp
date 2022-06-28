@@ -285,18 +285,20 @@ window.onload = function() {
         socket.emit('ok individual condition sounds good');
     });
 
-    socket.on('a_competitive_trial_completed', function () {
+    socket.on('a_competitive_trial_completed', function (data) {
         let my_box_x = Math.ceil((game.scene.keys.SceneDemoGroup.player.x - field_x_floor)/cell_size_x)
         let my_box_y = Math.ceil((game.scene.keys.SceneDemoGroup.player.y - field_y_floor)/cell_size_y)
         let my_option = (my_box_x + num_cell * (my_box_y-1));
+        // console.log(data.socialFreq);
         play_arm_competitive(my_box_x
             , my_box_y
             , num_cell
             , optionOrder
             , game.scene.keys.SceneDemoGroup
-            , currentTrial
+            , data.this_trial_num //currentTrial
             , condition
-            , game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1]
+            , data.socialFreq[my_option - 1]
+            // , game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1]
         ); 
         currentTrial++;
         // totalEarning += payoff;
@@ -312,9 +314,15 @@ window.onload = function() {
         // for (let i =1; i<numOptions+1; i++) {
         // 	objects_feedbackStage['box'+i].destroy();
         // }
-        setTimeout(function(){
-			wake_main_stage_up(game, indivOrGroup);
-		}, 1.8 * 1000);
+       
+        if (currentTrial <= horizon) {
+            setTimeout(function(){
+                wake_main_stage_up(game, indivOrGroup);
+            }, 1.8 * 1000);
+        } 
+        //else {
+        //     socket.emit('completed all trial in the competitive task')
+        // }
         // console.log('play_arm is fired with ' + game.scene.keys.SceneDemoGroup.social_frequency[my_option - 1] )
     })
 
@@ -418,14 +426,15 @@ window.onload = function() {
         game.scene.stop('SceneFeedback');
 
         const ctx = window.document.getElementById('myChart'); // myChart
-        let data_contents = [{
-            label: 'Your choices',
-            data: myChoices,
-            borderColor: 'rgba(255, 100, 100, 0.9)',
-            lineTension: 0,
-            fill: false,
-            borderWidth: 3
-        }];
+        let data_contents = [];
+        // let data_contents = [{
+        //     label: 'Your choices',
+        //     data: myChoices,
+        //     borderColor: 'rgba(255, 100, 100, 0.9)',
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderWidth: 3
+        // }];
 
         for (let i = 0; i < currentGroupSize; i++) {
             let others_choices = [];
@@ -441,6 +450,15 @@ window.onload = function() {
                     lineTension: 0,
                     fill: false,
                     borderWidth: 1
+                });
+            } else {
+                data_contents.push({
+                    label: 'Your choices',
+                    data: others_choices,
+                    borderColor: 'rgba(255, 100, 100, 0.9)',
+                    lineTension: 0,
+                    fill: false,
+                    borderWidth: 3
                 });
             }
         }

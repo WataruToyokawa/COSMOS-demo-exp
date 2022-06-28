@@ -122,7 +122,7 @@ roomStatus['finishedRoom'] = {
     round: 1,
     doneId: createArray(horizon, 0),
     doneNo: Array(horizon).fill(0),
-    socialFreq: createArray(horizon, numOptions),
+    socialFreq: Array(horizon),
     socialInfo: createArray(horizon, maxGroupSize),
     publicInfo: createArray(horizon, maxGroupSize),
     choiceOrder: createArray(horizon, maxGroupSize),
@@ -149,7 +149,7 @@ roomStatus[firstRoomName] = {
     round: 1,
     doneId: createArray(horizon, 0),
     doneNo: Array(horizon).fill(0),
-    socialFreq: createArray(horizon, numOptions),
+    socialFreq: Array(horizon),
     socialInfo:createArray(horizon, maxGroupSize),
     publicInfo:createArray(horizon, maxGroupSize),
     choiceOrder:createArray(horizon, maxGroupSize),
@@ -241,7 +241,7 @@ io.on('connection', function (client) {
 				round: 1,
 				doneId: createArray(horizon, 0),
 				doneNo: Array(horizon).fill(0),
-				socialFreq: createArray(horizon, numOptions),
+				socialFreq: Array(horizon),
 				socialInfo:createArray(horizon, maxGroupSize),
 				publicInfo:createArray(horizon, maxGroupSize),
 				choiceOrder:createArray(horizon, maxGroupSize),
@@ -333,7 +333,7 @@ io.on('connection', function (client) {
 				          round: 1,
 				          doneId: createArray(horizon, 0),
 				          doneNo: Array(horizon).fill(0),
-				          socialFreq: createArray(horizon, numOptions),
+				          socialFreq: Array(horizon),
 				          socialInfo:createArray(horizon, maxGroupSize),
 				          publicInfo:createArray(horizon, maxGroupSize),
 				          choiceOrder:createArray(horizon, maxGroupSize),
@@ -396,7 +396,7 @@ io.on('connection', function (client) {
 					round: 1,
 					doneId: createArray(horizon, 0),
 					doneNo: Array(horizon).fill(0),
-					socialFreq: createArray(horizon, numOptions),
+					socialFreq: Array(horizon),
 					socialInfo:createArray(horizon, maxGroupSize),
 					publicInfo:createArray(horizon, maxGroupSize),
 					choiceOrder:createArray(horizon, maxGroupSize),
@@ -476,7 +476,7 @@ io.on('connection', function (client) {
 				round: 1,
 				doneId: createArray(horizon, 0),
 				doneNo: Array(horizon).fill(0),
-				socialFreq: createArray(horizon, numOptions),
+				socialFreq: Array(horizon),
 				socialInfo:createArray(horizon, maxGroupSize),
 				publicInfo:createArray(horizon, maxGroupSize),
 				choiceOrder:createArray(horizon, maxGroupSize),
@@ -540,7 +540,7 @@ io.on('connection', function (client) {
     	;
     	logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
     	console.log(logdate + ' - Client ' + client.session + ' (subNo = ' + client.subjectNumber + ') chose ' + data.box_quality + ' and got ' + data.payoff + ' at trial ' + data.this_trial_num + '.');
-		let this_round_temp = roomStatus[client.room]['round']
+		let this_round_temp = data.this_trial_num //roomStatus[client.room]['round']
 		,	this_subject_temp = client.subjectNumber
 		;
 		if (typeof this_subject_temp != 'undefined' & typeof client.room != 'undefined' & typeof roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] != 'undefined') {
@@ -575,6 +575,13 @@ io.on('connection', function (client) {
 			if(typeof roomStatus[client.room]['doneNo'] != 'undefined') {
 				roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1]++;
 			}
+			if(typeof roomStatus[client.room]['socialFreq'][data.this_trial_num-1] == 'undefined') {
+				roomStatus[client.room]['socialFreq'][data.this_trial_num-1] = Array(numOptions).fill(0);
+				roomStatus[client.room]['socialFreq'][data.this_trial_num-1][data.clicked_box_position-1]++;
+			} else {
+				roomStatus[client.room]['socialFreq'][data.this_trial_num-1][data.clicked_box_position-1]++;
+			}
+
 			let now_endFeedback = new Date()
 	        ,	logdate_endFeedback = '[' + now_endFeedback.getUTCFullYear() + '/' + (now_endFeedback.getUTCMonth() + 1) + '/'
 	    	;
@@ -590,14 +597,19 @@ io.on('connection', function (client) {
 	    		logdate_endResultStage += now_endResultStage.getUTCDate() + '/' + now_endResultStage.getUTCHours() + ':' + now_endResultStage.getUTCMinutes() + ':' + now_endResultStage.getUTCSeconds() + ']';
 			  	console.log(logdate_endResultStage + ` - result stage ended at: ${client.room}`);
 				roomStatus[client.room]['round']++;
-				if(roomStatus[client.room]['round'] <= horizon) {
-					io.to(client.room).emit('a_competitive_trial_completed');
-				} else {
-					io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
-				}
+				io.to(client.room).emit('a_competitive_trial_completed', {this_trial_num:roomStatus[client.room]['round'] - 1, socialFreq:roomStatus[client.room]['socialFreq'][data.this_trial_num-1]});
+				// if(roomStatus[client.room]['round'] <= horizon) {
+				// 	io.to(client.room).emit('a_competitive_trial_completed', {this_trial_num:roomStatus[client.room]['round'] - 1});
+				// } else {
+				// 	io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
+				// }
 			}
 		}
 
+	});
+
+	client.on('completed all trial in the competitive task', function () {
+		io.to(client.id).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
 	});
 
 	// client.on('choice_is_made_in_competitive_cond', function() {
@@ -841,7 +853,7 @@ io.on('connection', function (client) {
 				// so than no one will never enter this room again. 
 				// On the other hand, if this is a group session's room, reducing 'n' may open up 
 				// a room for a new-comer if this room is still at the first waiting screen
-				if (roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1] >= roomStatus[client.room]['n']) {
+				if (roomStatus[client.room]['doneNo'][roomStatus[client.room]['round']-1] >= roomStatus[client.room]['n'] & roomStatus[client.room]['n'] > 0) {
 				  	console.log(`result stage ended at: ${client.room}`);
 				  	proceedRound(client);
 				}
