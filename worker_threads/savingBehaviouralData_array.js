@@ -32,74 +32,76 @@ mongoose.connect(dbName, {useNewUrlParser: true, useUnifiedTopology: true}, (err
 // for (let i = 0; i < workerData.length(); i++) {
 //   behaviour_parent.behaviour_child.push(workerData[i]);
 // }
+if(typeof workerData[0] != 'undefined') {
+  for (let i = 0; i < workerData.length; i++) {
+    let this_workerData = workerData[i];
+    //console.log('this workerData\'s optionOder is: '+this_workerData.optionOrder);
+    let behaviour = new Behaviour();
+    behaviour.date = this_workerData.date;
+    behaviour.time = this_workerData.time;
+    behaviour.exp_condition = this_workerData.exp_condition;
+    behaviour.isLeftRisky = this_workerData.isLeftRisky;
+    behaviour.indivOrGroup = this_workerData.indivOrGroup;
+    behaviour.groupSize = this_workerData.groupSize;
+    behaviour.room = this_workerData.room;
+    behaviour.confirmationID = this_workerData.confirmationID;
+    behaviour.subjectNumber = this_workerData.subjectNumber;
+    behaviour.amazonID = this_workerData.amazonID;
+    behaviour.round = this_workerData.round;
+    behaviour.choice = this_workerData.choice;
+    behaviour.payoff = this_workerData.payoff;
+    behaviour.totalEarning = this_workerData.totalEarning;
+    behaviour.behaviouralType = this_workerData.behaviouralType;
+    // behaviour.timeElapsed = this_workerData.timeElapsed;
+    behaviour.latency = this_workerData.latency;
+    // behaviour.socialFreq_safe1 = this_workerData.socialFreq[0]; //[this_workerData.optionOrder[0] - 1];
+    // behaviour.socialFreq_safe2 = this_workerData.socialFreq[1]; //[this_workerData.optionOrder[1] - 1];
+    // behaviour.socialFreq_safe3 = this_workerData.socialFreq[2]; //[this_workerData.optionOrder[2] - 1];
+    // behaviour.socialFreq_risky = this_workerData.socialFreq[3]; //[this_workerData.optionOrder[3] - 1];
+    // behaviour.riskDistributionId = this_workerData.riskDistributionId;
 
-for (let i = 0; i < workerData.length; i++) {
-  let this_workerData = workerData[i];
-  //console.log('this workerData\'s optionOder is: '+this_workerData.optionOrder);
-  let behaviour = new Behaviour();
-  behaviour.date = this_workerData.date;
-  behaviour.time = this_workerData.time;
-  behaviour.exp_condition = this_workerData.exp_condition;
-  behaviour.isLeftRisky = this_workerData.isLeftRisky;
-  behaviour.indivOrGroup = this_workerData.indivOrGroup;
-  behaviour.groupSize = this_workerData.groupSize;
-  behaviour.room = this_workerData.room;
-  behaviour.confirmationID = this_workerData.confirmationID;
-  behaviour.subjectNumber = this_workerData.subjectNumber;
-  behaviour.amazonID = this_workerData.amazonID;
-  behaviour.round = this_workerData.round;
-  behaviour.choice = this_workerData.choice;
-  behaviour.payoff = this_workerData.payoff;
-  behaviour.totalEarning = this_workerData.totalEarning;
-  behaviour.behaviouralType = this_workerData.behaviouralType;
-  behaviour.timeElapsed = this_workerData.timeElapsed;
-  behaviour.latency = this_workerData.latency;
-  behaviour.socialFreq_safe1 = this_workerData.socialFreq[0]; //[this_workerData.optionOrder[0] - 1];
-  behaviour.socialFreq_safe2 = this_workerData.socialFreq[1]; //[this_workerData.optionOrder[1] - 1];
-  behaviour.socialFreq_safe3 = this_workerData.socialFreq[2]; //[this_workerData.optionOrder[2] - 1];
-  behaviour.socialFreq_risky = this_workerData.socialFreq[3]; //[this_workerData.optionOrder[3] - 1];
-  behaviour.riskDistributionId = this_workerData.riskDistributionId;
+    let dummyInfo0 = new Array(16).fill(-1);
 
-  let dummyInfo0 = new Array(this_workerData.maxGroupSize).fill(-1);
-
-  for(let j=0; j<this_workerData.maxGroupSize; j++) {
-    if (j < 10) {
-      eval('behaviour.socialInfo_0'+j+'= dummyInfo0['+j+'];');
-      eval('behaviour.publicInfo_0'+j+'= dummyInfo0['+j+'];');
-    } else {
-      eval('behaviour.socialInfo_'+j+'= dummyInfo0['+j+'];');
-      eval('behaviour.publicInfo_'+j+'= dummyInfo0['+j+'];');
-    }
-  }
-
-  if(behaviour.round>1){
-    if(typeof this_workerData.socialInfo != 'undefined') { 
-      for(let j = 0; j < this_workerData.socialInfo.length; j++) {
-        if ( j < 10) {
-          eval('behaviour.socialInfo_0'+j+'= this_workerData.socialInfo['+j+'];');
-          eval('behaviour.publicInfo_0'+j+'= this_workerData.publicInfo['+j+'];');
-        } else {
-          eval('behaviour.socialInfo_'+j+'= this_workerData.socialInfo['+j+'];');
-          eval('behaviour.publicInfo_'+j+'= this_workerData.publicInfo['+j+'];');
-        }
+    for(let j=0; j<16; j++) {
+      if (j < 10) {
+        eval('behaviour.socialInfo_0'+j+'= dummyInfo0['+j+'];');
+        // eval('behaviour.publicInfo_0'+j+'= dummyInfo0['+j+'];');
+      } else {
+        eval('behaviour.socialInfo_'+j+'= dummyInfo0['+j+'];');
+        // eval('behaviour.publicInfo_'+j+'= dummyInfo0['+j+'];');
       }
-    }else{
-      console.log(` - [Worker] this_workerData.socialInfo is undefined!`);
     }
+
+    if(behaviour.round>1){
+      if(typeof this_workerData.socialFreq != 'undefined') { 
+        for(let j = 0; j < this_workerData.socialFreq.length; j++) {
+          if ( j < 10) {
+            eval('behaviour.socialInfo_0'+j+'= this_workerData.socialFreq['+j+'];');
+            // eval('behaviour.publicInfo_0'+j+'= this_workerData.publicInfo['+j+'];');
+          } else {
+            eval('behaviour.socialInfo_'+j+'= this_workerData.socialFreq['+j+'];');
+            // eval('behaviour.publicInfo_'+j+'= this_workerData.publicInfo['+j+'];');
+          }
+        }
+      }else{
+        console.log(` - [Worker] this_workerData.socialFreq is undefined!`);
+      }
+    }
+
+    behaviour.save(function(err){
+      if(err) console.log(`err at worker ${this_workerData.amazonID}.`);
+      if(i == workerData.length - 1) {
+        let now = new Date()
+              , logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
+            ;
+        logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
+        console.log(logdate + ` - [Worker] isMainThread: ${isMainThread}, behaviour of ${this_workerData.room} saved`);
+        process.exit();
+        parentPort.postMessage(`[Worker] Finished ${this_workerData.room}`);
+      }
+    });
   }
 
-  behaviour.save(function(err){
-    if(err) console.log(`err at worker ${this_workerData.amazonID}.`);
-    if(i == workerData.length - 1) {
-      let now = new Date()
-            , logdate = '[' + now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/'
-          ;
-      logdate += now.getUTCDate() + '/' + now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds() + ']';
-      console.log(logdate + ` - [Worker] isMainThread: ${isMainThread}, behaviour of ${this_workerData.room} saved`);
-      process.exit();
-      parentPort.postMessage(`[Worker] Finished ${this_workerData.room}`);
-    }
-  });
 }
 
 

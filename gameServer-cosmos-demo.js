@@ -28,7 +28,7 @@ const express = require('express')
 ;
 
 // multi-threading like thing in Node.js
-const {Worker} = require('worker_threads');
+const {Worker} = require('node:worker_threads');
 
 
 // Experimental variables
@@ -553,8 +553,32 @@ io.on('connection', function (client) {
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1][this_subject_temp - 1] = data.payoff;
 		}
 
-		// if(data.condition == 'competitive') proceedRound(client);
-		// console.log("roomStatus[client.room]['socialInfo'][this_round_temp - 1] = " + roomStatus[client.room]['socialInfo'][this_round_temp - 1])
+		// =========  save data to mongodb
+		roomStatus[client.room]['saveDataThisRound'].push(
+			{	date: now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) +'-' + now.getUTCDate()
+			,	time: now.getUTCHours()+':'+now.getUTCMinutes()+':'+now.getUTCSeconds()
+			,	exp_condition: roomStatus[client.room]['exp_condition']
+			,	indivOrGroup: roomStatus[client.room]['indivOrGroup']
+			,	groupSize: roomStatus[client.room]['n']
+			,	room: client.room
+			,	confirmationID: client.session
+			,	subjectNumber: client.subjectNumber
+			,	amazonID: client.amazonID
+			,	round: roomStatus[client.room]['round']
+			,	choice: data.box_quality
+			,	payoff: data.payoff
+			,	totalEarning: data.totalEarning
+			,	behaviouralType: 'choice'
+			// ,	timeElapsed: timeElapsed
+			,	latency: client.latency
+			,	socialFreq: roomStatus[client.room]['socialFreq'][roomStatus[client.room]['round']-2]
+			,	socialInfo: data.socialInfo
+			,	publicInfo: data.publicInfo
+			,	maxGroupSize: maxGroupSize
+			}
+			);
+		// console.log(roomStatus[client.room]['saveDataThisRound'])
+		// =========  save data to mongodb
     });
 
 	client.on('update_done_n', function(data) {
@@ -609,6 +633,17 @@ io.on('connection', function (client) {
 	});
 
 	client.on('completed all trial in the competitive task', function () {
+		let now_endResultStage = new Date()
+		,	logdate_endResultStage = '[' + now_endResultStage.getUTCFullYear() + '/' + (now_endResultStage.getUTCMonth() + 1) + '/'
+		;
+		logdate_endResultStage += now_endResultStage.getUTCDate() + '/' + now_endResultStage.getUTCHours() + ':' + now_endResultStage.getUTCMinutes() + ':' + now_endResultStage.getUTCSeconds() + ']';
+			console.log(logdate_endResultStage + ` - all trials ended in the competitive task played by: ${client.room}`);
+
+		// =========  For every 10 rounds, save data to mongodb by loop
+		// if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] <= horizon) {
+		const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
+		roomStatus[client.room]['saveDataThisRound'] = [];
+
 		io.to(client.id).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
 	});
 
@@ -674,6 +709,7 @@ io.on('connection', function (client) {
 			  	// =========  For every 10 rounds, save data to mongodb by loop
 			  	// if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] <= horizon) {
 			  	if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] % 10 == 0) { //if(roomStatus[client.room]['indivOrGroup'] != 0) {
+					const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  		roomStatus[client.room]['saveDataThisRound'] = [];
 				}
 			  	// =========  save data to mongodb by loop END
@@ -785,6 +821,7 @@ io.on('connection', function (client) {
 			  	// =========  save data to mongodb by loop
 			  	// if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] <= horizon) {
 			  	if(typeof roomStatus[client.room]['round']!='undefined'&roomStatus[client.room]['round'] % 10 == 0) { //if(roomStatus[client.room]['indivOrGroup'] != 0) {
+					const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  		roomStatus[client.room]['saveDataThisRound'] = [];
 
 				  	// for(let i=0; i<roomStatus[client.room]['saveDataThisRound'].length; i++) {
@@ -845,6 +882,7 @@ io.on('connection', function (client) {
 
 			if(roomStatus[thisRoomName]['indivOrGroup'] != 0) {
 				// =========  save data to mongodb by loop
+				const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 		  		roomStatus[client.room]['saveDataThisRound'] = [];
 		  		// =========  save data to mongodb by loop END
 				roomStatus[thisRoomName]['n']--;
@@ -858,6 +896,7 @@ io.on('connection', function (client) {
 				  	proceedRound(client);
 				}
 			} else { // if this is the individual condition
+				const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 			  	roomStatus[client.room]['saveDataThisRound'] = [];
 			}
 			// ======= remove this client from the room =====

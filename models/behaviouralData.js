@@ -22,8 +22,6 @@ const Behaviour = new Schema({
     choice: { type: String, require: false },
     payoff: { type: String, require: false },
     totalEarning: { type: String, require: false },
-    // socialFreq_safe: { type: String, require: false },
-    // socialFreq_risky: { type: String, require: false },
     socialFreq_safe1: { type: String, require: false },
     socialFreq_safe2: { type: String, require: false },
     socialFreq_safe3: { type: String, require: false },
@@ -43,6 +41,11 @@ const Behaviour = new Schema({
     socialInfo_09: { type: String, require: false },
     socialInfo_10: { type: String, require: false },
     socialInfo_11: { type: String, require: false },
+    socialInfo_12: { type: String, require: false },
+    socialInfo_13: { type: String, require: false },
+    socialInfo_14: { type: String, require: false },
+    socialInfo_15: { type: String, require: false },
+    socialInfo_16: { type: String, require: false },
     publicInfo_00: { type: String, require: false },
     publicInfo_01: { type: String, require: false },
     publicInfo_02: { type: String, require: false },
@@ -54,20 +57,14 @@ const Behaviour = new Schema({
     publicInfo_08: { type: String, require: false },
     publicInfo_09: { type: String, require: false },
     publicInfo_10: { type: String, require: false },
-    publicInfo_11: { type: String, require: false }
+    publicInfo_11: { type: String, require: false },
+    publicInfo_12: { type: String, require: false },
+    publicInfo_13: { type: String, require: false },
+    publicInfo_14: { type: String, require: false },
+    publicInfo_15: { type: String, require: false },
+    publicInfo_16: { type: String, require: false }
 },
-    //{collection:"pilot_debug"}
-    //{collection:"pilot_experiment"}
-    // {collection:"postPilot_debug"}
-    //{collection:"postPilot_debug_indiv"}
-    //{collection:"experimental_sessions"}
-    //{collection:"experimental_sessions_indiv"}
-    //{collection:"debug_collection"}
-    //{collection:"experimental_sessions_2"}
-    //{collection:"pilot_4ab"}
-    //{collection:"experiment_4ab"}
-    {collection:"revision_exp_debug"}
-    // {collection:"revision_exp"}
+    {collection:"cosmos_demo"}
 );
 
 module.exports = mongoose.model('behaviour', Behaviour);
