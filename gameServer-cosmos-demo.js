@@ -17,6 +17,7 @@
 // Loading modules
 const express = require('express')
 ,	app = express()
+,	cors = require('cors')
 ,	server = require('http').Server(app)
 ,	io = require('socket.io')(server, {
 	// below are engine.IO options
@@ -36,7 +37,7 @@ const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
 , maxGroupSize = 20 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 15*1000 //3*60*1000
+, maxWaitingTime = 60*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
@@ -79,6 +80,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors({ origin: ['http://63-250-60-135.cloud-xip.io:8080','http://63.250.60.135:8080'], credentials: true })); // origin: true
 
 // Routings
 const gameRouter = require('./routes/game'); // loading game.ejs from which amazonID is transferred

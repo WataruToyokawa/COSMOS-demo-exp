@@ -5,15 +5,7 @@ import {configWidth
 	, noteColor
 } from './global_const_values.js';
 
-import {rand
-	, isNotNegative
-	, BoxMuller
-	, sum
-	, waitingBarCompleted
-	, sending_core_is_ready
-	, goToQuestionnaire
-	, settingConfirmationID
-	// , testFunction
+import {sending_core_is_ready	// , testFunction
 } from './functions.js';
 
 
