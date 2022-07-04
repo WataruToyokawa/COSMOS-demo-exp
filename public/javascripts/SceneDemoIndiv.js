@@ -12,7 +12,6 @@ import {fieldHeight
 import {play_arm
 	, countdownBarStarts
 	, getRandomIntInclusive
-	, sum
 } from './functions.js';
 
 // debug test environment

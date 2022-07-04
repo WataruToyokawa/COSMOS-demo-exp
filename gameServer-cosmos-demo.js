@@ -301,12 +301,12 @@ io.on('connection', function (client) {
 			  	while (typeof client.room == 'undefined') {
 				    // if there are still rooms to check
 				    if (client.roomFindingCounter <= Object.keys(roomStatus).length - 1) {
-						if(roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['starting'] == 0 && roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['n'] < maxGroupSize && roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['restTime'] > 999) {
+						if(roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['starting'] == 0 && roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['n'] < maxGroupSize && roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['restTime'] > 999 && roomStatus[Object.keys(roomStatus)[client.roomFindingCounter]]['exp_condition'] == client.condition) {
 							client.room = Object.keys(roomStatus)[client.roomFindingCounter];
 							var now_joined1 = new Date();
 							var logdate_joined1 = '['+now_joined1.getUTCFullYear()+'/'+(now_joined1.getUTCMonth()+1)+'/';
 							logdate_joined1 += now_joined1.getUTCDate()+'/'+now_joined1.getUTCHours()+':'+now_joined1.getUTCMinutes()+':'+now_joined1.getUTCSeconds()+']';
-							console.log(logdate_joined1+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+')');
+							console.log(logdate_joined1+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+') with condition = '+ client.condition);
 						} else {
 							client.roomFindingCounter++;
 						}
@@ -347,7 +347,7 @@ io.on('connection', function (client) {
 				      let now_joined2 = new Date();
 				      let logdate_joined2 = '['+now_joined2.getUTCFullYear()+'/'+(now_joined2.getUTCMonth()+1)+'/';
 				      logdate_joined2 += now_joined2.getUTCDate()+'/'+now_joined2.getUTCHours()+':'+now_joined2.getUTCMinutes()+':'+now_joined2.getUTCSeconds()+']';
-				      console.log(logdate_joined2+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+')');
+				      console.log(logdate_joined2+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+') with condition = ' + client.condition);
 				      // Make a clock object in the new room
 				      countDownMainStage[client.room] = new Object();
 				      countDownWaiting[client.room] = new Object();
@@ -410,7 +410,7 @@ io.on('connection', function (client) {
 				var now_joined3 = new Date();
 				var logdate_joined3 = '['+now_joined3.getUTCFullYear()+'/'+(now_joined3.getUTCMonth()+1)+'/';
 				logdate_joined3 += now_joined3.getUTCDate()+'/'+now_joined3.getUTCHours()+':'+now_joined3.getUTCMinutes()+':'+now_joined3.getUTCSeconds()+']';
-				console.log(logdate_joined3+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+')');
+				console.log(logdate_joined3+' - '+ client.session +'('+client.amazonID+')'+' joined to '+ client.room +' (n: '+(1+roomStatus[client.room]['n'])+', total N: '+(1+total_N_now)+') with condition = ' + client.condition);
 				// Let the client join the registered room
 				client.join(client.room);
 				//io.to(client).emit('S_to_C_clientSessionName', {sessionName: client.session, roomName: client.room});
@@ -454,6 +454,7 @@ io.on('connection', function (client) {
 	// });
 
 	client.on('ok individual condition sounds good', function () {
+		client.condition = 'individual';
 		// finally checking weather group is still below the maxnumber
 		if(roomStatus[client.room]['n'] < maxGroupSize) {
 			// the status of the client's former room is updated
@@ -462,7 +463,7 @@ io.on('connection', function (client) {
 			// create a new individual condition's room
 			roomStatus[myMonth+myDate+myHour+myMin+'_sessionIndiv_' + (sessionNo + Object.keys(roomStatus).length - 1)] = 
 			{
-				exp_condition: '', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
+				exp_condition: 'individual', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
 				optionOrder: shuffle(options),
 				// optionOrder: [],
 				indivOrGroup: 0,

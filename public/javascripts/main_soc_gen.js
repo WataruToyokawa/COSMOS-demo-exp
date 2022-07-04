@@ -243,6 +243,7 @@ window.onload = function() {
         currentGroupSize = data.n;
         $("#indivOrGroup").val(indivOrGroup);
         $("#bonus_for_waiting").val(Math.round(waitingBonus));
+        $("#exp_condition").val(exp_condition);
         ////console.log('your indivOrGroup is ' + $("#indivOrGroup").val());
         /*if(indivOrGroup == 0) {
             choiceOpportunities = 3; //3
@@ -336,7 +337,9 @@ window.onload = function() {
     socket.on('client disconnected', function(data) {
         console.log('client disconnected. subjectNumber = ' + data.disconnectedSubjectNumber + ' left the room');
         other_player_visibility_array[data.disconnectedSubjectNumber - 1] = false;
-        other_player_array[data.disconnectedSubjectNumber - 1].visible = false;
+        if (typeof other_player_array[data.disconnectedSubjectNumber - 1] != 'undefined') {
+            other_player_array[data.disconnectedSubjectNumber - 1].visible = false;
+        }
         currentGroupSize = data.roomStatus['n']
     });
 

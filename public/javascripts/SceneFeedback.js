@@ -86,9 +86,9 @@ class SceneFeedback extends Phaser.Scene {
 	}
 
 	update(){
-		if (needAFeedback & condition != 'competitive') {
+		if (needAFeedback && exp_condition != 'competitive') {
 			needAFeedback = false;
-			emit_this_trial_is_done(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings, condition);
+			emit_this_trial_is_done(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings, exp_condition);
 		} 
 		// else if (this.isTimeout & condition == 'competitive') {
 		// 	update_done_n(this, indivOrGroup, currentTrial, horizon, myChoices, myEarnings, condition);
