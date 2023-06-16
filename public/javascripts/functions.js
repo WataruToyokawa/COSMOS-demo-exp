@@ -121,7 +121,7 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 	this_game.game.scene.start('SceneFeedback', {payoff:payoff, x:x, y:y, clicked_box_position:clicked_box_position, box_quality:box_quality, this_trial_num:this_trial_num, isTimeout:false});
 	if (typeof this_game.game.scene.keys.SceneDebugPopup.popup != 'undefined') this_game.game.scene.keys.SceneDebugPopup.popup.visible = false;
 	if (indivOrGroup == 0) {
-		this_game.game.scene.keys.SceneDemoIndiv.player.visible = false;
+		// this_game.game.scene.keys.SceneDemoIndiv.player.visible = false; // player icon becomes invisible
 		this_game.game.scene.keys.SceneDemoIndiv.player.removeInteractive();
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
@@ -130,7 +130,7 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 		}
 	} else {
 		this_game.game.scene.keys.SceneDemoGroup.isSceneDemoGroupActive = false;
-		this_game.game.scene.keys.SceneDemoGroup.player.visible = false;
+		// this_game.game.scene.keys.SceneDemoGroup.player.visible = false; // player icon becomes invisible
 		this_game.game.scene.keys.SceneDemoGroup.player.removeInteractive();
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
@@ -494,3 +494,42 @@ export function CreateSpeechBubbleShape (scene, fillColor, strokeColor) {
         }
     })
 }
+
+export function csvDownload (csv_contents) {
+	////////////////////making data for csv////////////////////
+	// prepare header in advance
+	const header = "id, trial, choice, payoff\r\n";
+	let data = header;
+  
+	// extracting the onject's content and separate them by ","
+	for (let sample of csv_contents) {
+	  // sampling each property and add "," in the end
+	  data += sample.id + ",";
+	  data += sample.trial + ",";
+	  data += sample.choice + ",";
+	  data += sample.payoff;
+	  // finally, we need to move on to the next line
+	  data += "\r\n";
+	}
+  
+	////////////////////Trainsforming to CSV////////////////////
+	// add BOM (this prevents Excel from doing annoyng stuff) 
+	const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+	// create binary data
+	const blob = new Blob([bom, data], { type: "text/csv" });
+	// make an object URL from blob
+	const objectUrl = URL.createObjectURL(blob);
+  
+	////////////////////Download link////////////////////
+	// making a download link (making an a-tag of HTML)
+	const downloadLink = document.createElement("a");
+	// name the file
+	const fileName = "fishing_game_result.csv";
+	downloadLink.download = fileName;
+	// href for a-tag
+	downloadLink.href = objectUrl;
+  
+	downloadLink.click();
+	// 
+	downloadLink.remove();
+};

@@ -35,9 +35,9 @@ const {Worker} = require('node:worker_threads');
 // Experimental variables
 const horizon = 10 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
-, maxGroupSize = 20 //
+, maxGroupSize = 30 //
 , minGroupSize = 2 //4
-, maxWaitingTime = 60*1000 //3*60*1000
+, maxWaitingTime = 40*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
@@ -977,7 +977,7 @@ function proceedRound (client) {
 		io.to(client.room).emit('Proceed to next round', roomStatus[client.room]);
 	} else {
 		// io.to(room).emit('End this session', roomStatus[client.room]);
-		io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
+		io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo']});
 	}
 }
 

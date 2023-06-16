@@ -16,7 +16,8 @@ import {emit_this_trial_is_done
 
 
 // ==== Other classes ====================================
-import DotsEater from './DotsEater.js';
+// import DotsEater from './DotsEater.js';
+// import Ellipsis from './Ellipsis.js';
 
 class SceneFeedback extends Phaser.Scene {
 
@@ -27,7 +28,8 @@ class SceneFeedback extends Phaser.Scene {
 	preload(){
 		this.load.scenePlugin({
             key: 'rexuiplugin',
-            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            // url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+			url: 'javascripts/rexuiplugin.min.js',
             sceneKey: 'rexUI'
         });
 	}
@@ -45,11 +47,12 @@ class SceneFeedback extends Phaser.Scene {
 		//  --- DotEater animation ---- (see phaser3-loading-animations-premium)
 		const loadingObj = this.add.container()
 		this.loadingObj = loadingObj
-		DotsEater.create(this, this.x_pos, this.y_pos+20) //fieldWidth/2, fieldHeight/2 + 100
-						.useEaterColor(Secondary)
-						.useDotColor(...Rainbow)
-						.addToContainer(this.loadingObj)
-						.play()
+		// DotsEater.create(this, this.x_pos, this.y_pos+20) //fieldWidth/2, fieldHeight/2 + 100
+		// 				.useEaterColor(Secondary)
+		// 				.useDotColor(...Rainbow)
+		// 				.addToContainer(this.loadingObj)
+		// 				.play()
+		// Ellipsis.create(this, this.x_pos, this.y_pos+20).play()
 
 		// --- background colour ---
 		// this.cameras.main.setBackgroundColor(0xffffff); //#FFFFFF == 'white'
@@ -72,7 +75,7 @@ class SceneFeedback extends Phaser.Scene {
 		if(this.payoff > 0) {
 			createTextBox(this, this.x_pos - 45, this.y_pos - 60, {
 				wrapWidth: 450,
-			}).start(''+this.payoff+' points!', 50);
+			}).start(''+this.payoff+'kg fish!', 50); // points!
 
 			// Updating the choice history data
 			myChoices.push(this.box_quality);

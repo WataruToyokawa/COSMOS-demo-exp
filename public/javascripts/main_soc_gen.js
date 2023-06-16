@@ -48,6 +48,7 @@ import {settingConfirmationID
     , wake_main_stage_up
     , shuffleArray
     , play_arm_competitive
+    , csvDownload
 } from './functions.js';
 
 const myData = [];
@@ -430,6 +431,9 @@ window.onload = function() {
 
         const ctx = window.document.getElementById('myChart'); // myChart
         let data_contents = [];
+        let csv_contents = [];
+        
+         //<button onclick="csvDownload()">Download results</button>
         // let data_contents = [{
         //     label: 'Your choices',
         //     data: myChoices,
@@ -441,8 +445,26 @@ window.onload = function() {
 
         for (let i = 0; i < currentGroupSize; i++) {
             let others_choices = [];
+            let others_payoffs = [];
             for (let t = 0; t < horizon; t++) {
                 others_choices.push(data.socialInfo[t][i])
+                others_payoffs.push(data.publicInfo[t][i])
+                // data for csv saving
+                if (i+1 != subjectNumber) {
+                    csv_contents.push({
+                        id: i+1, 
+                        trial: t+1, 
+                        choice: data.socialInfo[t][i],
+                        payoff: data.publicInfo[t][i]
+                    });
+                } else {
+                    csv_contents.push({
+                        id: 'myself', // 
+                        trial: t+1, // 
+                        choice: data.socialInfo[t][i],
+                        payoff: data.publicInfo[t][i]
+                    });
+                }
             }
             if (i+1 != subjectNumber) {
                 data_contents.push({
@@ -464,19 +486,28 @@ window.onload = function() {
                     borderWidth: 3
                 });
             }
+            if (i == currentGroupSize-1) {
+                // let donwloadButton = document.createElement("div");
+                // donwloadButton.innerHTML = '<button onclick="csvDownload(csv_contents)">Download results</button>';
+                const currentDiv = document.getElementById("download");
+                currentDiv.innerHTML = '<div class="btn2" id="downloadButton" style="left: 50%;">Download results</fiv>';
+                const downloadButton = document.getElementById("downloadButton");
+                downloadButton.addEventListener('click', () => { csvDownload(csv_contents) }, false);
+                // document.body.insertBefore(donwloadButton, currentDiv);
+            }
         }
 
         const myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: Array.from({length: horizon}, (_, i) => i + 1),
+                labels: Array.from({length: horizon}, (_, i) => i + 1), // [1,2,3,...,horizon]
                 datasets: data_contents
             },
             options: {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: num_cell * num_cell + 1,
+                        max: num_cell * num_cell + 0.2,
                         title: {
                             display: true,
                             text: 'Ranking of choices'
@@ -497,6 +528,11 @@ window.onload = function() {
                 }
             }
         });
+
+        console.log(csv_contents);        
+
     });
+
+    
 
 } // window.onload -- end
