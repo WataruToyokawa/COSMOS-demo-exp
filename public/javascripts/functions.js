@@ -498,7 +498,7 @@ export function CreateSpeechBubbleShape (scene, fillColor, strokeColor) {
 export function csvDownload (csv_contents) {
 	////////////////////making data for csv////////////////////
 	// prepare header in advance
-	const header = "id, trial, choice, payoff\r\n";
+	const header = "id, trial, choice, payoff, date, time, timeSinceEpoch\r\n";
 	let data = header;
   
 	// extracting the onject's content and separate them by ","
@@ -507,7 +507,10 @@ export function csvDownload (csv_contents) {
 	  data += sample.id + ",";
 	  data += sample.trial + ",";
 	  data += sample.choice + ",";
-	  data += sample.payoff;
+	  data += sample.payoff + ",";
+	  data += sample.date + ",";
+	  data += sample.time + ',';
+	  data += sample.timeSec; // timeSec is the number of milliseconds for this date since the midnight at the beginning of January 1, 1970, UTC
 	  // finally, we need to move on to the next line
 	  data += "\r\n";
 	}

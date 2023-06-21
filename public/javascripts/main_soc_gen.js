@@ -455,14 +455,20 @@ window.onload = function() {
                         id: i+1, 
                         trial: t+1, 
                         choice: data.socialInfo[t][i],
-                        payoff: data.publicInfo[t][i]
+                        payoff: data.publicInfo[t][i],
+                        date: data.date[t][i],
+                        time: data.time[t][i],
+                        timeSec: data.timeSec[t][i]
                     });
                 } else {
                     csv_contents.push({
                         id: 'myself', // 
                         trial: t+1, // 
                         choice: data.socialInfo[t][i],
-                        payoff: data.publicInfo[t][i]
+                        payoff: data.publicInfo[t][i],
+                        date: data.date[t][i],
+                        time: data.time[t][i],
+                        timeSec: data.timeSec[t][i]
                     });
                 }
             }

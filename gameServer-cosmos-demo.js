@@ -128,6 +128,9 @@ roomStatus['finishedRoom'] = {
     socialInfo: createArray(horizon, maxGroupSize),
     publicInfo: createArray(horizon, maxGroupSize),
     choiceOrder: createArray(horizon, maxGroupSize),
+    date: createArray(horizon, maxGroupSize),
+    time: createArray(horizon, maxGroupSize),
+    timeSec: createArray(horizon, maxGroupSize),
     saveDataThisRound: [],
     restTime:maxWaitingTime,
 };
@@ -155,6 +158,9 @@ roomStatus[firstRoomName] = {
     socialInfo:createArray(horizon, maxGroupSize),
     publicInfo:createArray(horizon, maxGroupSize),
     choiceOrder:createArray(horizon, maxGroupSize),
+	date: createArray(horizon, maxGroupSize),
+    time: createArray(horizon, maxGroupSize),
+    timeSec: createArray(horizon, maxGroupSize),
     saveDataThisRound: [],
     restTime:maxWaitingTime
 };
@@ -247,6 +253,9 @@ io.on('connection', function (client) {
 				socialInfo:createArray(horizon, maxGroupSize),
 				publicInfo:createArray(horizon, maxGroupSize),
 				choiceOrder:createArray(horizon, maxGroupSize),
+				date: createArray(horizon, maxGroupSize),
+				time: createArray(horizon, maxGroupSize),
+				timeSec: createArray(horizon, maxGroupSize),
 				saveDataThisRound: [],
 				restTime:maxWaitingTime
 			};
@@ -339,6 +348,9 @@ io.on('connection', function (client) {
 				          socialInfo:createArray(horizon, maxGroupSize),
 				          publicInfo:createArray(horizon, maxGroupSize),
 				          choiceOrder:createArray(horizon, maxGroupSize),
+						  date: createArray(horizon, maxGroupSize),
+						  time: createArray(horizon, maxGroupSize),
+						  timeSec: createArray(horizon, maxGroupSize),
 				          saveDataThisRound: [],
 				          restTime:maxWaitingTime
 				      };
@@ -402,6 +414,9 @@ io.on('connection', function (client) {
 					socialInfo:createArray(horizon, maxGroupSize),
 					publicInfo:createArray(horizon, maxGroupSize),
 					choiceOrder:createArray(horizon, maxGroupSize),
+					date: createArray(horizon, maxGroupSize),
+					time: createArray(horizon, maxGroupSize),
+					timeSec: createArray(horizon, maxGroupSize),
 					saveDataThisRound: [],
 					restTime:1000
 		      	};
@@ -483,6 +498,9 @@ io.on('connection', function (client) {
 				socialInfo:createArray(horizon, maxGroupSize),
 				publicInfo:createArray(horizon, maxGroupSize),
 				choiceOrder:createArray(horizon, maxGroupSize),
+				date: createArray(horizon, maxGroupSize),
+				time: createArray(horizon, maxGroupSize),
+				timeSec: createArray(horizon, maxGroupSize),
 				saveDataThisRound: [],
 				restTime:maxWaitingTime
 			};
@@ -549,11 +567,20 @@ io.on('connection', function (client) {
 		if (typeof this_subject_temp != 'undefined' & typeof client.room != 'undefined' & typeof roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] != 'undefined') {
 			roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] = data.box_quality;
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1][this_subject_temp - 1] = data.payoff;
+			roomStatus[client.room]['date'][this_round_temp - 1][this_subject_temp - 1] = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) +'-' + now.getUTCDate();
+			roomStatus[client.room]['time'][this_round_temp - 1][this_subject_temp - 1] = now.getUTCHours()+':'+now.getUTCMinutes()+':'+now.getUTCSeconds()+':'+now.getUTCMilliseconds();
+			roomStatus[client.room]['timeSec'][this_round_temp - 1][this_subject_temp - 1] = now.getTime();
 		} else {
 			roomStatus[client.room]['socialInfo'][this_round_temp - 1] = Array(maxGroupSize).fill(0);
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1] = Array(maxGroupSize).fill(0);
+			roomStatus[client.room]['date'][this_round_temp - 1] = Array(maxGroupSize).fill(0);
+			roomStatus[client.room]['time'][this_round_temp - 1] = Array(maxGroupSize).fill(0);
+			roomStatus[client.room]['timeSec'][this_round_temp - 1] = Array(maxGroupSize).fill(0);
 			roomStatus[client.room]['socialInfo'][this_round_temp - 1][this_subject_temp - 1] = data.box_quality;
 			roomStatus[client.room]['publicInfo'][this_round_temp - 1][this_subject_temp - 1] = data.payoff;
+			roomStatus[client.room]['date'][this_round_temp - 1][this_subject_temp - 1] = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1) +'-' + now.getUTCDate();
+			roomStatus[client.room]['time'][this_round_temp - 1][this_subject_temp - 1] = now.getUTCHours()+':'+now.getUTCMinutes()+':'+now.getUTCSeconds()+':'+now.getUTCMilliseconds();
+			roomStatus[client.room]['timeSec'][this_round_temp - 1][this_subject_temp - 1] = now.getTime();
 		}
 
 		// =========  save data to mongodb
@@ -628,7 +655,7 @@ io.on('connection', function (client) {
 				// if(roomStatus[client.room]['round'] <= horizon) {
 				// 	io.to(client.room).emit('a_competitive_trial_completed', {this_trial_num:roomStatus[client.room]['round'] - 1});
 				// } else {
-				// 	io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
+				// 	io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo'], date:roomStatus[client.room]['date'], time:roomStatus[client.room]['time'], timeSec:roomStatus[client.room]['timeSec']});
 				// }
 			}
 		}
@@ -647,7 +674,7 @@ io.on('connection', function (client) {
 		const worker = createWorker('./worker_threads/savingBehaviouralData_array.js', roomStatus[client.room]['saveDataThisRound']);
 		roomStatus[client.room]['saveDataThisRound'] = [];
 
-		io.to(client.id).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo']});
+		io.to(client.id).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo'], date:roomStatus[client.room]['date'], time:roomStatus[client.room]['time'], timeSec:roomStatus[client.room]['timeSec']});
 	});
 
 	// client.on('choice_is_made_in_competitive_cond', function() {
@@ -722,7 +749,7 @@ io.on('connection', function (client) {
     });
 
 	client.on('go_to_summary_page', function (data) {
-		io.to(client.session).emit('show_chart', {myChoices:data.myChoices, myEarnings:data.myEarnings, socialInfo:roomStatus[client.room]['socialInfo']});
+		io.to(client.session).emit('show_chart', {myChoices:data.myChoices, myEarnings:data.myEarnings, socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo'], date:roomStatus[client.room]['date'], time:roomStatus[client.room]['time'], timeSec:roomStatus[client.room]['timeSec']});
 	});
 
 	client.on('choice made', function (data) {
@@ -977,7 +1004,7 @@ function proceedRound (client) {
 		io.to(client.room).emit('Proceed to next round', roomStatus[client.room]);
 	} else {
 		// io.to(room).emit('End this session', roomStatus[client.room]);
-		io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo']});
+		io.to(client.room).emit('show_chart', {socialInfo:roomStatus[client.room]['socialInfo'], publicInfo:roomStatus[client.room]['publicInfo'], date:roomStatus[client.room]['date'], time:roomStatus[client.room]['time'], timeSec:roomStatus[client.room]['timeSec']});
 	}
 }
 
