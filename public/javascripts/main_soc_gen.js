@@ -131,7 +131,7 @@ window.onload = function() {
 	    },
 	    parent: 'phaser-game-main',
 	    scale: {
-	        _mode: Phaser.Scale.FIT,
+	        mode: Phaser.Scale.FIT,
 	        parent: 'phaser-game-main',
 	        autoCenter: Phaser.Scale.CENTER_BOTH,
 	        width: configWidth,
@@ -185,7 +185,7 @@ window.onload = function() {
         maxChoiceStageTime = data.maxChoiceStageTime;
         indivOrGroup = data.indivOrGroup;
         exp_condition = data.exp_condition; //binary_4ab
-
+        payoff_noise = data.payoff_noise;
         riskDistributionId = data.riskDistributionId;
         subjectNumber = data.subjectNumber;
         optionOrder = data.optionOrder;
@@ -203,8 +203,8 @@ window.onload = function() {
             window.location.href = htmlServer + portnumQuestionnaire + '/multipleAccess';
         }
         socket.io.opts.query = 'sessionName='+data.id+'&roomName='+data.room+'&amazonID='+amazonID+'&bonus_for_waiting='+waitingBonus+'&totalEarning='+totalEarning+'&confirmationID='+confirmationID+'&exp_condition='+exp_condition+'&indivOrGroup='+indivOrGroup+'&completed='+completed+'&latency='+submittedLatency;
-        //console.log('client session name is ' + socket.io.opts.query);
-        //console.log('and client subjectNumber is ' + subjectNumber);
+        // console.log('payoff_noise is ' + payoff_noise);
+        // console.log('optionOrder is ' + optionOrder);
         //console.log('and maxChoiceStageTime = ' + maxChoiceStageTime);
         //console.log('and confirmationID is = ' + confirmationID);
         $("#exp_condition").val(exp_condition);

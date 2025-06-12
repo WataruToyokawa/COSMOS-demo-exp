@@ -54,6 +54,7 @@ class SceneDemoGroup extends Phaser.Scene {
 		// --- Creating options ---
 		let options = {}
 		this.options = options
+		this.payoff_noise = payoff_noise
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
 				// this.add.image(0, 0, 'Loewenbraeu_Logo.svg').setOrigin(0, 0).setScale(0.75);
@@ -211,6 +212,7 @@ class SceneDemoGroup extends Phaser.Scene {
 						, currentTrial
 						, condition
 						, this.social_frequency[my_option - 1]
+						, this.payoff_noise
 					); // "this" allows function.js to know where the game exists
 					isChoiceMade = true;
 				} else {
@@ -237,6 +239,7 @@ class SceneDemoGroup extends Phaser.Scene {
 					, currentTrial
 					, condition
 					, this.social_frequency[my_option - 1]
+					, this.payoff_noise
 				); // "this" allows function.js to know where the game exists
 				isChoiceMade = true;
 			} else {

@@ -12,6 +12,7 @@ let isEnvironmentReady = false
 	, jitter_position_array = []
 	, payoff
 	, payoffTransformed
+	, payoff_noise
 	, totalEarning = 0
 	, cent_per_point = 2/100 // 1 cent per 100 points
 	, browserHiddenPermittedTime = 10 * 1000

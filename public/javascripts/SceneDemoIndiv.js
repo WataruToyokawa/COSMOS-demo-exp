@@ -38,6 +38,7 @@ class SceneDemoIndiv extends Phaser.Scene {
 		// --- Creating options ---
 		let options = {}
 		this.options = options
+		this.payoff_noise = payoff_noise
 		for (let i = 1; i < num_cell+1; i++) {
 			for (let j = 1; j < num_cell+1; j++) {
 				// this.add.image(0, 0, 'Loewenbraeu_Logo.svg').setOrigin(0, 0).setScale(0.75);
@@ -157,7 +158,7 @@ class SceneDemoIndiv extends Phaser.Scene {
 			{
 				isChoiceMade = true;
 				this.player.body.reset(this.target.x, this.target.y);
-				play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
+				play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial, 'individual', 1, this.payoff_noise); // "this" allows function.js to know where the game exists
 			}
 
 		}
@@ -166,7 +167,7 @@ class SceneDemoIndiv extends Phaser.Scene {
 		if (this.player.x < field_x_floor | this.player.x > field_x_floor + fieldWidth | this.player.y < field_y_floor | this.player.y > field_y_floor + fieldHeight) {
 			isChoiceMade = true;
 			this.player.body.reset(this.target.x, this.target.y);
-			play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial); // "this" allows function.js to know where the game exists
+			play_arm(Math.ceil((this.player.x - field_x_floor)/cell_size_x), Math.ceil((this.player.y - field_y_floor)/cell_size_y), num_cell, optionOrder, this, currentTrial, 'individual', 1, this.payoff_noise); // "this" allows function.js to know where the game exists
 		}
 	}
 };

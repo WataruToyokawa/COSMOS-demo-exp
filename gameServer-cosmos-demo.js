@@ -33,15 +33,16 @@ const {Worker} = require('node:worker_threads');
 
 
 // Experimental variables
-const horizon = 10 // 100?
+const horizon = 30 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
-, maxGroupSize = 30 //
+, maxGroupSize = 10 //
 , minGroupSize = 2 //4
 , maxWaitingTime = 40*1000 //3*60*1000
 , num_cell = 4
 , numOptions = num_cell * num_cell // 
 , maxChoiceStageTime = 15*1000 //20*1000 // ms
 , maxTimeTestScene = 4* 60*1000 // 4*60*1000
+, payoff_diff_btw_gr = 150
 , options = [];
 ;
 
@@ -110,7 +111,7 @@ setInterval(function generateHeapDumpAndStats() {
 roomStatus['finishedRoom'] = {
     exp_condition: 'finishedRoom',
     optionOrder: shuffle(options),
-    // optionOrder: [],
+	payoff_noise: addNoise(payoff_diff_btw_gr),
     indivOrGroup: -1,
     n: 0,
     membersID: [],
@@ -132,7 +133,7 @@ roomStatus['finishedRoom'] = {
     time: createArray(horizon, maxGroupSize),
     timeSec: createArray(horizon, maxGroupSize),
     saveDataThisRound: [],
-    restTime:maxWaitingTime,
+    restTime:maxWaitingTime
 };
 // The following is the first room
 // Therefore, Object.keys(roomStatus).length = 2 right now
@@ -140,7 +141,7 @@ roomStatus['finishedRoom'] = {
 roomStatus[firstRoomName] = {
     exp_condition: '', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
     optionOrder: shuffle(options),
-    // optionOrder: [],
+	payoff_noise: addNoise(payoff_diff_btw_gr),
     indivOrGroup: -1,
     n: 0,
     membersID: [],
@@ -235,7 +236,7 @@ io.on('connection', function (client) {
 			roomStatus[client.room] = {
 				exp_condition: '', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
 				optionOrder: shuffle(options),
-				// optionOrder: [],
+				payoff_noise: addNoise(payoff_diff_btw_gr),
 				indivOrGroup: -1,
 				n: 0,
 				membersID: [],
@@ -257,7 +258,8 @@ io.on('connection', function (client) {
 				time: createArray(horizon, maxGroupSize),
 				timeSec: createArray(horizon, maxGroupSize),
 				saveDataThisRound: [],
-				restTime:maxWaitingTime
+				restTime:maxWaitingTime,
+	
 			};
 			roomStatus[client.room]['n']++;
 			roomStatus[client.room]['total_n']++;
@@ -330,7 +332,7 @@ io.on('connection', function (client) {
 				          // riskDistributionId: 20, //getRandomIntInclusive(max = 13, min = 13), // max = 2, min = 0
 				          // isLeftRisky: isLeftRisky_list[getRandomIntInclusive(max = 1, min = 0)],
 				          optionOrder: shuffle(options),
-				          // optionOrder: [],
+						  payoff_noise: addNoise(payoff_diff_btw_gr),
 				          indivOrGroup: -1,
 				          n: 0,
 				          membersID: [],
@@ -352,7 +354,8 @@ io.on('connection', function (client) {
 						  time: createArray(horizon, maxGroupSize),
 						  timeSec: createArray(horizon, maxGroupSize),
 				          saveDataThisRound: [],
-				          restTime:maxWaitingTime
+				          restTime:maxWaitingTime,
+				
 				      };
 				      // Register the client to the new room
 				      client.room = client.newRoomName;
@@ -396,7 +399,7 @@ io.on('connection', function (client) {
 					// riskDistributionId: 20, //getRandomIntInclusive(max = 13, min = 13), // max = 2, min = 0
 					// isLeftRisky: isLeftRisky_list[getRandomIntInclusive(max = 1, min = 0)],
 					optionOrder: shuffle(options),
-					// optionOrder: [],
+					payoff_noise: addNoise(payoff_diff_btw_gr),
 					indivOrGroup: 0,
 					n: 0,
 					membersID: [],
@@ -480,7 +483,7 @@ io.on('connection', function (client) {
 			{
 				exp_condition: 'individual', //bandit_profile[weightedRand2({0:prob_binary, 1:(1-prob_binary)})],
 				optionOrder: shuffle(options),
-				// optionOrder: [],
+				payoff_noise: addNoise(payoff_diff_btw_gr),
 				indivOrGroup: 0,
 				n: 0,
 				membersID: [],
@@ -502,7 +505,8 @@ io.on('connection', function (client) {
 				time: createArray(horizon, maxGroupSize),
 				timeSec: createArray(horizon, maxGroupSize),
 				saveDataThisRound: [],
-				restTime:maxWaitingTime
+				restTime:maxWaitingTime,
+	
 			};
 			// client leave the former room
 			client.leave(client.room);
@@ -994,6 +998,11 @@ function shuffle(array) {
   return array;
 }
 
+function addNoise(payoff_diff_btw_gr) {
+	let payoff_noise = Math.floor(Math.random() * payoff_diff_btw_gr);
+	return payoff_noise;
+}
+
 
 //weightedRand2({0:prob_binary, 1:(1-prob_binary)});
 
@@ -1064,6 +1073,7 @@ function parameterEmitting (client) {
 			, numOptions: numOptions
 			, optionOrder: roomStatus[client.room]['optionOrder'] 
 			, maxGroupSize: maxGroupSize
+			, payoff_noise: roomStatus[client.room]['payoff_noise'] 
 		});
 	let nowEmitting = new Date(),
 	  	logdateEmitting = '['+nowEmitting.getUTCFullYear()+'/'+(nowEmitting.getUTCMonth()+1)+'/';

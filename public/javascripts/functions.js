@@ -96,10 +96,17 @@ export function settingConfirmationID (id) {
 	$("#confirmationID").val(id);
 }
 
-export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num, condition = 'individual', n_in_the_cell = 1, isTimeout = false) {
+export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num, condition = 'individual', n_in_the_cell = 1, payoff_noise = 0) {
 	let clicked_box_position = (x + num_cell * (y-1));
 	let box_quality = optionOrder[clicked_box_position - 1];
-	let payoff = BoxMuller(50+box_quality*10, 5);
+	let payoff;
+	if (condition=='individual') {
+		payoff = BoxMuller(50+box_quality*10, 5) + payoff_noise;
+	} else if (condition=='competitive') {
+		payoff = BoxMuller(30+box_quality*10, 5) + payoff_noise;
+	} else {
+		payoff = BoxMuller(80+box_quality*10, 5) + payoff_noise;
+	}
 
 	if (condition == 'competitive') {
 		payoff = Math.round(payoff / n_in_the_cell);
@@ -149,10 +156,10 @@ export function play_arm (x, y, num_cell, optionOrder, this_game, this_trial_num
 	this_game.energyMask.x = this_game.energyBar.x // reset the countdown bar length
 }
 
-export function play_arm_competitive (x, y, num_cell, optionOrder, this_game, this_trial_num, condition = 'competitive', n_in_the_cell = 1, isTimeout = false) {
+export function play_arm_competitive (x, y, num_cell, optionOrder, this_game, this_trial_num, condition = 'competitive', n_in_the_cell = 1, payoff_noise = 0) {
 	let clicked_box_position = (x + num_cell * (y-1));
 	let box_quality = optionOrder[clicked_box_position - 1];
-	let payoff = BoxMuller(50+box_quality*10, 5);
+	let payoff = BoxMuller(50+box_quality*10, 5) + payoff_noise;
 
 	payoff = Math.round(payoff / n_in_the_cell);
 

@@ -28,11 +28,14 @@ class SceneResult extends Phaser.Scene {
 
 	create(){
 		// --- resize the canvas element ---
-		this.scale.resize(configWidth, configHeight/6);
+		// this.game.scale.scaleMode = Phaser.Scale.NONE;
+		// this.game.scale.refresh();
+		// this.game.scale.resize(configWidth, configHeight/6);
+		this.scale.setGameSize(configWidth, configHeight/6);
 		// --- background colour ---
-		this.cameras.main.setBackgroundColor(0xffffff); //#FFFFFF == 'white'
+		this.cameras.main.setBackgroundColor(0x87CEEB); //(0xffffff); //#FFFFFF == 'white'
 
-		this.resultText = this.add.text(field_x_floor, configHeight/2/6, 'Well done! Look at the result 👇', { fontSize: '30px', fill: '#000'});
+		this.resultText = this.add.text(field_x_floor, configHeight/2/6, 'Well done! \nScroll down \nto see the result below 👇', { fontSize: '20px', fill: '#000'});
 
 		// console.log('myChoices = ' + myChoices)
 		
