@@ -1,6 +1,6 @@
 const GetValue = Phaser.Utils.Objects.GetValue;
 
-var CreateFileInput = function (config) {
+var CreateFileInput = function (game, config) {
     var fileInput = document.createElement('input');
     fileInput.type = 'file';
 

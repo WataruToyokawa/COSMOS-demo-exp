@@ -1,2 +1,2 @@
-import CanvasFrameManager from './texture/canvasframemanager/CanvasFrameManager';
+import CanvasFrameManager from './framemanager';
 export default CanvasFrameManager;

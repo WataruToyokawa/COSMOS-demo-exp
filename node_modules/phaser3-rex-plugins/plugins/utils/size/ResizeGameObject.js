@@ -1,22 +1,49 @@
-var ResizeGameObject = function (gameObject, newWidth, newHeight) {
-    if (!gameObject || ((newWidth === undefined) && (newHeight === undefined))) {
+import HasResizeMethod from './HasResizeMethod.js';
+import CanSetDisplaySize from './CanSetDisplaySize.js';
+
+var ResizeGameObject = function (gameObject, newDisplayWidth, newDisplayHeight) {
+    // Set display size
+
+    if (!gameObject || ((newDisplayWidth === undefined) && (newDisplayHeight === undefined))) {
         return;
     }
-    if (gameObject.resize) { // Has `resize` method
-        if (newWidth === undefined) {
+
+    if (HasResizeMethod(gameObject)) { // Has `resize`, or `setSize` method
+        var newWidth, newHeight;
+        if (newDisplayWidth === undefined) {
             newWidth = gameObject.width;
+        } else {
+            newWidth = newDisplayWidth / gameObject.scaleX;
         }
-        if (newHeight === undefined) {
+        if (newDisplayHeight === undefined) {
             newHeight = gameObject.height;
+        } else {
+            newHeight = newDisplayHeight / gameObject.scaleY;
         }
-        gameObject.resize(newWidth, newHeight);
-    } else { // Set display width/height
-        if (newWidth !== undefined) {
-            gameObject.displayWidth = newWidth;
+
+        if (gameObject.resize) {
+            gameObject.resize(newWidth, newHeight);
+        } else {
+            gameObject.setSize(newWidth, newHeight);
         }
-        if (newHeight !== undefined) {
-            gameObject.displayHeight = newHeight;
+
+    } else {
+        var canSetDisplaySize = CanSetDisplaySize(gameObject);
+        if (newDisplayWidth !== undefined) {
+            if (canSetDisplaySize) {
+                gameObject.displayWidth = newDisplayWidth;
+            } else {
+                gameObject.scaleX = newDisplayWidth / gameObject.width;
+            }
         }
+        if (newDisplayHeight !== undefined) {
+            if (canSetDisplaySize) {
+                gameObject.displayHeight = newDisplayHeight;
+            } else {
+                gameObject.scaleY = newDisplayHeight / gameObject.height;
+            }
+        }
+
     }
 }
 

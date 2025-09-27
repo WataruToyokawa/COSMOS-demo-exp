@@ -1,8 +1,12 @@
 var AddChildrenMap = function (key, gameObject) {
-    if (this.childrenMap === undefined) {
-        this.childrenMap = {};
+    if (typeof (key) === 'string') {
+        this.childrenMap[key] = gameObject;
+    } else {
+        var config = key;
+        for (key in config) {
+            this.childrenMap[key] = config[key];
+        }
     }
-    this.childrenMap[key] = gameObject;
     return this;
 }
 

@@ -10,15 +10,14 @@
 	    <link href="/stylesheets/import.css" rel="stylesheet" type="text/css" media="all" />
 	    <!--<link rel='stylesheet' href='/stylesheets/style.css' />-->
 	    <!-- <script type="text/javascript" src="/javascripts/jquery.min.js"></script> -->
-	    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js" integrity="sha512-QSkVNOCYLtj73J4hbmVoOV6KVZuMluZlioC+trLpewV8qMjsWqlIQvkn1KGX2StWvPMdWGBqim1xlC8krl1EKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	    <script src="//cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	    <script src="https://cdn.jsdelivr.net/npm/phaser@v3.90.0/dist/phaser.min.js"></script>
 	    <!--<script src="/javascripts/phaser/dist/phaser.js"></script>-->
 	    <script src="/socket.io/socket.io.js"></script>
 	    <script type="text/javascript">
 			const amazonID = <%- JSON.stringify(amazonID) %>; // prolificID
 			const condition = <%- JSON.stringify(condition) %>; // individual, group, competitive
-			const portnum = 8080; //8181 = indiv
 		</script>
 		<!--<script type="text/javascript" src="/javascripts/expFunctions.js"></script>-->
 		<!--<script type="text/javascript" src="/javascripts/main.js"></script> -->
@@ -60,7 +59,7 @@
 			</span></p>
 		</noscript>
 		<div id= "questionnaireStarts"></div>
-		<form style="display: hidden" action="http://63-250-60-135.cloud-xip.io:8000/questionnaire" method="POST" id="form">
+		<form style="display: hidden" action="http://tk2-127-63496.vs.sakura.ne.jp:8000/questionnaire" method="POST" id="form">
     	<!--<form style="display: hidden" action="http://192.168.33.10:8000/questionnaire" method="POST" id="form">-->
 	        <input type="hidden" id="amazonID" name="amazonID" value="" />
 	        <input type="hidden" id="bonus_for_waiting" name="bonus_for_waiting" value="0" />
