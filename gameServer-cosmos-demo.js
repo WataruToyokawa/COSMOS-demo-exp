@@ -33,7 +33,7 @@ const {Worker} = require('node:worker_threads');
 
 
 // Experimental variables
-const horizon = 30 // 100?
+const horizon = 15 // 100?
 , sessionNo = 400 // 0 = debug; 100~ = 30&31 July; 200~ = August; 300~ afternoon August; 400~ revision exp
 , maxGroupSize = 10 //
 , minGroupSize = 2 //4
